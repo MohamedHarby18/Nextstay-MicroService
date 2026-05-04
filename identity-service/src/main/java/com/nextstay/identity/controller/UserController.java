@@ -1,0 +1,61 @@
+package com.nextstay.identity.controller;
+
+import com.nextstay.common.dto.UpdateProfileRequest;
+import com.nextstay.common.dto.UserResponse;
+import com.nextstay.identity.entity.UserRole;
+import com.nextstay.identity.repository.UserRepository;
+import com.nextstay.identity.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/users")
+@RequiredArgsConstructor
+public class UserController {
+
+    private final UserService userService;
+    private final UserRepository userRepository;
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
+        return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+    @GetMapping("/email/{email}")
+    public ResponseEntity<UserResponse> getUserByEmail(@PathVariable String email) {
+        return ResponseEntity.ok(userService.getUserByEmail(email));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserResponse> updateProfile(@PathVariable UUID id, @RequestBody UpdateProfileRequest request) {
+        return ResponseEntity.ok(userService.updateProfile(id, request));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // INTERNAL ENDPOINTS
+    @GetMapping("/{id}/exists")
+    public ResponseEntity<Boolean> userExists(@PathVariable UUID id) {
+        return ResponseEntity.ok(userRepository.existsById(id));
+    }
+
+    @GetMapping("/{id}/role")
+    public ResponseEntity<UserRole> getUserRole(@PathVariable UUID id) {
+        return userRepository.findById(id)
+                .map(user -> ResponseEntity.ok(user.getRole()))
+                .orElse(ResponseEntity.notFound().build());
+    }
+}
