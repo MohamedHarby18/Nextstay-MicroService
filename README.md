@@ -7,14 +7,12 @@ nextstay-microservices/
 ├── pom.xml (Parent POM - Multi-module)
 ├── docker-compose.yml
 ├── README.md
+├── start-services.sh
 │
 ├── nextstay-common/
 │   ├── pom.xml
 │   └── src/main/java/com/nextstay/common/
 │       ├── dto/
-│       │   ├── LoginRequest.java
-│       │   ├── LoginResponse.java
-│       │   └── CreateUserRequest.java
 │       └── entity/
 │
 ├── eureka-server/
@@ -33,39 +31,24 @@ nextstay-microservices/
 │       └── resources/
 │           └── application.properties
 │
-├── auth-service/
+├── identity-service/
 │   ├── pom.xml
 │   └── src/
-│       ├── main/java/com/nextstay/auth/
-│       │   ├── AuthServiceApplication.java
-│       │   ├── controller/
-│       │   ├── service/
-│       │   ├── repository/
-│       │   └── entity/
+│       ├── main/java/com/nextstay/identity/
 │       └── resources/
 │           └── application.properties
 │
-├── user-service/
+├── listing-service/
 │   ├── pom.xml
 │   └── src/
-│       ├── main/java/com/nextstay/user/
-│       │   ├── UserServiceApplication.java
-│       │   ├── controller/
-│       │   ├── service/
-│       │   ├── repository/
-│       │   └── entity/
+│       ├── main/java/com/nextstay/listing/
 │       └── resources/
 │           └── application.properties
 │
-├── agent-service/
+├── booking-service/
 │   ├── pom.xml
 │   └── src/
-│       ├── main/java/com/nextstay/agent/
-│       │   ├── AgentServiceApplication.java
-│       │   ├── controller/
-│       │   ├── service/
-│       │   ├── repository/
-│       │   └── entity/
+│       ├── main/java/com/nextstay/booking/
 │       └── resources/
 │           └── application.properties
 │
@@ -73,11 +56,6 @@ nextstay-microservices/
 │   ├── pom.xml
 │   └── src/
 │       ├── main/java/com/nextstay/review/
-│       │   ├── ReviewServiceApplication.java
-│       │   ├── controller/
-│       │   ├── service/
-│       │   ├── repository/
-│       │   └── entity/
 │       └── resources/
 │           └── application.properties
 │
@@ -85,11 +63,6 @@ nextstay-microservices/
     ├── pom.xml
     └── src/
         ├── main/java/com/nextstay/support/
-        │   ├── SupportServiceApplication.java
-        │   ├── controller/
-        │   ├── service/
-        │   ├── repository/
-        │   └── entity/
         └── resources/
             └── application.properties
 ```
@@ -98,18 +71,19 @@ nextstay-microservices/
 
 ### Service Ports
 - **API Gateway**: 8080
-- **Auth Service**: 8081
-- **User Service**: 8082
-- **Agent Service**: 8083
+- **Eureka Server**: 8761
+- **Identity Service**: 8081
+- **Listing Service**: 8082
+- **Booking Service**: 8083
 - **Review Service**: 8084
 - **Support Service**: 8085
-- **Eureka Server**: 8761
 
 ### Databases
-- **Auth DB**: `NextstayAuthDB` (port 3307)
-- **User DB**: `NextstayUserDB` (port 3307)
-- **Review DB**: `NextstayReviewDB` (port 3307)
-- **Support DB**: `NextstaySupportDB` (port 3307)
+- **Identity DB**: `NextstayIdentityDB` (port 3307)
+- **Listing DB**: `NextstayListingDB` (port 3308)
+- **Booking DB**: `NextstayBookingDB` (port 3311)
+- **Review DB**: `NextstayReviewDB` (port 3309)
+- **Support DB**: `NextstaySupportDB` (port 3310)
 
 ## 🚀 Getting Started
 
@@ -117,7 +91,7 @@ nextstay-microservices/
 - JDK 17 or higher
 - Maven 3.8+
 - MySQL 8.0+
-- Docker & Docker Compose (optional, for containerized deployment)
+- Docker & Docker Compose (optional)
 
 ### Build & Run
 
@@ -129,37 +103,32 @@ nextstay-microservices/
    mvn clean install -DskipTests
    ```
 
-2. **Start Eureka Server** (in separate terminal)
+2. **Start Eureka Server** (in a separate terminal)
    ```bash
    cd eureka-server
    mvn spring-boot:run
    ```
 
-3. **Start API Gateway** (in separate terminal)
+3. **Start API Gateway** (in a separate terminal)
    ```bash
    cd ../api-gateway
    mvn spring-boot:run
    ```
 
-4. **Start individual services** (each in separate terminal)
+4. **Start individual services** (each in a separate terminal)
    ```bash
-   # Auth Service
-   cd ../auth-service
+   cd ../identity-service
    mvn spring-boot:run
    
-   # User Service
-   cd ../user-service
+   cd ../listing-service
    mvn spring-boot:run
    
-   # Agent Service
-   cd ../agent-service
+   cd ../booking-service
    mvn spring-boot:run
    
-   # Review Service
    cd ../review-service
    mvn spring-boot:run
    
-   # Support Service
    cd ../support-service
    mvn spring-boot:run
    ```
@@ -188,18 +157,18 @@ nextstay-microservices/
 - **Message Queue**: For asynchronous events (RabbitMQ/Kafka - optional)
 
 ### API Endpoints (through Gateway)
-- **Auth**: `GET/POST /api/auth/**`
-- **Users**: `GET/POST/PUT/DELETE /api/users/**`
-- **Agents**: `GET/POST/PUT/DELETE /api/agents/**`
+- **Identity**: `GET/POST /api/identity/**`
+- **Listing**: `GET/POST/PUT/DELETE /api/listings/**`
+- **Booking**: `GET/POST/PUT/DELETE /api/bookings/**`
 - **Reviews**: `GET/POST /api/reviews/**`
 - **Support**: `GET/POST /api/support/**`
 
 ## 🔐 Security
 
 ### JWT Authentication
-- Each service validates JWT tokens from the Auth Service
-- Token includes user role and permissions
-- Gateway validates tokens before routing requests
+- Each service validates JWT tokens from the identity/auth flow
+- Tokens include roles and permissions
+- The gateway validates authorization before routing requests
 
 ## 📈 Monitoring
 
@@ -214,49 +183,49 @@ Shows:
 ## 📝 Development Notes
 
 ### Adding New Endpoints
-1. Add controller in respective service
-2. Implement business logic in service layer
+1. Add a controller in the appropriate service
+2. Implement business logic in the service layer
 3. Update API Gateway routes if needed
-4. Test through gateway endpoint
+4. Test through the gateway endpoint
 
-### Inter-Service Communication
+### Inter-Service Communication Example
 ```java
-@FeignClient(name = "user-service")
-public interface UserServiceClient {
-    @GetMapping("/api/users/{id}")
-    User getUserById(@PathVariable Long id);
+@FeignClient(name = "listing-service")
+public interface ListingServiceClient {
+    @GetMapping("/api/listings/{id}")
+    ListingDto getListingById(@PathVariable Long id);
 }
 ```
 
 ### Database Migration
-- Each service has its own database
-- Use JPA/Hibernate for migrations
-- DDL auto is set to `update` for development
+- Each service owns its own database
+- Use JPA/Hibernate for schema generation
+- `spring.jpa.hibernate.ddl-auto=update` is intended for development
 
 ## 🐛 Troubleshooting
 
 ### Services not registering with Eureka
-- Check Eureka Server is running on port 8761
+- Confirm Eureka Server is running on port 8761
 - Verify `eureka.client.serviceUrl.defaultZone` in each service
 
 ### Database connection errors
 - Ensure MySQL is running
-- Verify database credentials in `application.properties`
-- Check database names exist
+- Verify the correct DB name and credentials in application properties
+- Match datasource URLs with Docker Compose database service names
 
 ### Gateway routing issues
-- Verify service names in routes match registered service names
-- Check service health in Eureka dashboard
-- Review gateway application.properties
+- Confirm service IDs and routes in the gateway configuration
+- Check service health in the Eureka dashboard
+- Review the gateway `application.properties`
 
 ## 📚 Next Steps
 
-1. **Implement logging** using ELK Stack or Splunk
-2. **Add API documentation** using Swagger/OpenAPI
-3. **Implement circuit breaker** using Resilience4j
-4. **Add message queue** for asynchronous operations
-5. **Setup monitoring** with Prometheus and Grafana
-6. **Implement distributed tracing** using Sleuth and Zipkin
+1. Implement centralized logging (ELK, Splunk, etc.)
+2. Add API documentation via Swagger/OpenAPI
+3. Add resilience patterns with Resilience4j
+4. Introduce async messaging (RabbitMQ/Kafka)
+5. Add monitoring with Prometheus/Grafana
+6. Implement distributed tracing with Sleuth/Zipkin
 
 ## 📄 License
 
@@ -264,6 +233,6 @@ MIT License
 
 ---
 
-**Author**: Nextstay Development Team  
-**Version**: 1.0.0  
-**Last Updated**: 2026-05-04
+**Author**: Nextstay Development Team
+**Version**: 1.0.0
+**Last Updated**: 2026-05-05
