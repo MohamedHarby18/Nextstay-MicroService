@@ -1,17 +1,15 @@
-version: '3.8'
 
 services:
   # Eureka Service Discovery
   eureka-server:
-    image: openjdk:17-jdk-slim
+    build:
+      context: .
+      dockerfile: eureka-server/Dockerfile
     container_name: eureka-server
     ports:
       - "8761:8761"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-    volumes:
-      - ./eureka-server/target/eureka-server-1.0.0.jar:/app.jar
-    entrypoint: java -jar /app.jar
     networks:
       - nextstay-network
 
@@ -26,6 +24,12 @@ services:
       MYSQL_DATABASE: NextstayIdentityDB
     volumes:
       - identity-db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
     networks:
       - nextstay-network
 
@@ -40,6 +44,12 @@ services:
       MYSQL_DATABASE: NextstayListingDB
     volumes:
       - listing-db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
     networks:
       - nextstay-network
 
@@ -54,6 +64,12 @@ services:
       MYSQL_DATABASE: NextstayBookingDB
     volumes:
       - booking-db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
     networks:
       - nextstay-network
 
@@ -68,6 +84,12 @@ services:
       MYSQL_DATABASE: NextstayReviewDB
     volumes:
       - review-db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
     networks:
       - nextstay-network
 
@@ -82,112 +104,139 @@ services:
       MYSQL_DATABASE: NextstaySupportDB
     volumes:
       - support-db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
     networks:
       - nextstay-network
 
   # API Gateway
   api-gateway:
-    image: openjdk:17-jdk-slim
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
     container_name: api-gateway
     ports:
       - "8080:8080"
     depends_on:
-      - eureka-server
+      eureka-server:
+        condition: service_started
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-    volumes:
-      - ./api-gateway/target/api-gateway-1.0.0.jar:/app.jar
-    entrypoint: java -jar /app.jar
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
     networks:
       - nextstay-network
 
   # Identity Service
   identity-service:
-    image: openjdk:17-jdk-slim
+    build:
+      context: .
+      dockerfile: identity-service/Dockerfile
     container_name: identity-service
     ports:
       - "8081:8081"
     depends_on:
-      - eureka-server
-      - mysql-identity
+      eureka-server:
+        condition: service_started
+      mysql-identity:
+        condition: service_healthy
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-identity:3306/NextstayIdentityDB?useSSL=false&serverTimezone=UTC
-    volumes:
-      - ./identity-service/target/identity-service-1.0.0.jar:/app.jar
-    entrypoint: java -jar /app.jar
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - "SPRING_DATASOURCE_URL=jdbc:mysql://mysql-identity:3306/NextstayIdentityDB?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=Root@123
     networks:
       - nextstay-network
 
   # Listing Service
   listing-service:
-    image: openjdk:17-jdk-slim
+    build:
+      context: .
+      dockerfile: listing-service/Dockerfile
     container_name: listing-service
     ports:
       - "8082:8082"
     depends_on:
-      - eureka-server
-      - mysql-listing
+      eureka-server:
+        condition: service_started
+      mysql-listing:
+        condition: service_healthy
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-listing:3306/NextstayListingDB?useSSL=false&serverTimezone=UTC
-    volumes:
-      - ./listing-service/target/listing-service-1.0.0.jar:/app.jar
-    entrypoint: java -jar /app.jar
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - "SPRING_DATASOURCE_URL=jdbc:mysql://mysql-listing:3306/NextstayListingDB?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=Root@123
     networks:
       - nextstay-network
 
   # Booking Service
   booking-service:
-    image: openjdk:17-jdk-slim
+    build:
+      context: .
+      dockerfile: booking-service/Dockerfile
     container_name: booking-service
     ports:
       - "8083:8083"
     depends_on:
-      - eureka-server
-      - mysql-booking
+      eureka-server:
+        condition: service_started
+      mysql-booking:
+        condition: service_healthy
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-booking:3306/NextstayBookingDB?useSSL=false&serverTimezone=UTC
-    volumes:
-      - ./booking-service/target/booking-service-1.0.0.jar:/app.jar
-    entrypoint: java -jar /app.jar
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - "SPRING_DATASOURCE_URL=jdbc:mysql://mysql-booking:3306/NextstayBookingDB?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=Root@123
     networks:
       - nextstay-network
 
   # Review Service
   review-service:
-    image: openjdk:17-jdk-slim
+    build:
+      context: .
+      dockerfile: review-service/Dockerfile
     container_name: review-service
     ports:
       - "8084:8084"
     depends_on:
-      - eureka-server
-      - mysql-review
+      eureka-server:
+        condition: service_started
+      mysql-review:
+        condition: service_healthy
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-review:3306/NextstayReviewDB?useSSL=false&serverTimezone=UTC
-    volumes:
-      - ./review-service/target/review-service-1.0.0.jar:/app.jar
-    entrypoint: java -jar /app.jar
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - "SPRING_DATASOURCE_URL=jdbc:mysql://mysql-review:3306/NextstayReviewDB?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=Root@123
     networks:
       - nextstay-network
 
   # Support Service
   support-service:
-    image: openjdk:17-jdk-slim
+    build:
+      context: .
+      dockerfile: support-service/Dockerfile
     container_name: support-service
     ports:
       - "8085:8085"
     depends_on:
-      - eureka-server
-      - mysql-support
+      eureka-server:
+        condition: service_started
+      mysql-support:
+        condition: service_healthy
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-support:3306/NextstaySupportDB?useSSL=false&serverTimezone=UTC
-    volumes:
-      - ./support-service/target/support-service-1.0.0.jar:/app.jar
-    entrypoint: java -jar /app.jar
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - "SPRING_DATASOURCE_URL=jdbc:mysql://mysql-support:3306/NextstaySupportDB?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=Root@123
     networks:
       - nextstay-network
 

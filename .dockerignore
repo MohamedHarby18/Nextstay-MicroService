@@ -1,0 +1,8 @@
+**/target/
+.git
+.idea
+*.iml
+.metals
+.bloop
+agent-transcripts/
+mcps/
