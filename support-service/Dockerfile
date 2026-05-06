@@ -3,7 +3,7 @@ WORKDIR /build
 COPY . .
 RUN mvn clean package -pl support-service -am -DskipTests
 
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=build /build/support-service/target/support-service-1.0.0.jar app.jar
 EXPOSE 8085
