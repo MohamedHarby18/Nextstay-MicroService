@@ -1,7 +1,7 @@
 package com.nextstay.identity.controller;
 
-import com.nextstay.common.dto.LoginRequest;
-import com.nextstay.common.dto.UserResponse;
+import com.nextstay.identity.dto.LoginRequest;
+import com.nextstay.identity.dto.UserResponse;
 import com.nextstay.identity.dto.AuthResponse;
 import com.nextstay.identity.dto.RegisterRequest;
 import com.nextstay.identity.service.AuthService;
@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.UUID;
 
 @RestController
@@ -20,12 +21,12 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponse> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
 

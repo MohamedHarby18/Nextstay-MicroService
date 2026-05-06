@@ -43,6 +43,12 @@ public class User {
 
     private LocalDateTime lastLoginAt;
 
+    private String phoneNumber;
+
+    private String bio;
+
+    private String profilePhoto;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

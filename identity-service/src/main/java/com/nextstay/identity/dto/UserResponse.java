@@ -1,4 +1,4 @@
-package com.nextstay.common.dto;
+package com.nextstay.identity.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +16,9 @@ public class UserResponse {
     private UUID id;
     private String name;
     private String email;
+    private String phoneNumber;
+    private String bio;
+    private String profilePhoto;
     private String role;
     private Boolean isVerified;
     private LocalDateTime createdAt;

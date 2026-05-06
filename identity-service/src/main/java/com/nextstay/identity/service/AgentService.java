@@ -1,10 +1,9 @@
 package com.nextstay.identity.service;
 
-import com.nextstay.common.dto.AgentResponse;
+import com.nextstay.identity.dto.AgentResponse;
 import com.nextstay.common.exception.ConflictException;
 import com.nextstay.common.exception.ResourceNotFoundException;
 import com.nextstay.common.exception.UnauthorizedException;
-import com.nextstay.common.security.JwtTokenProvider;
 import com.nextstay.identity.client.SupportServiceClient;
 import com.nextstay.identity.dto.AgentLoginRequest;
 import com.nextstay.identity.dto.AgentRegisterRequest;
@@ -12,17 +11,20 @@ import com.nextstay.identity.dto.AuthResponse;
 import com.nextstay.identity.entity.Agent;
 import com.nextstay.identity.entity.AgentRole;
 import com.nextstay.identity.repository.AgentRepository;
+import com.nextstay.identity.security.JwtTokenProvider;
+
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AgentService {
 
     private final AgentRepository agentRepository;
@@ -85,13 +87,13 @@ public class AgentService {
     public List<AgentResponse> getAllAgents() {
         return agentRepository.findAll().stream()
                 .map(this::mapToAgentResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<AgentResponse> getAllActiveAgents() {
         return agentRepository.findByIsActiveTrue().stream()
                 .map(this::mapToAgentResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public AgentResponse updateAgentRole(UUID id, AgentRole newRole) {
@@ -114,9 +116,12 @@ public class AgentService {
         try {
             supportServiceClient.unassignTicketsForAgent(id);
         } catch (Exception e) {
-            // Log error but don't fail deactivation
-            System.err.println("Failed to unassign tickets for agent " + id + ": " + e.getMessage());
+            log.error("Failed to unassign tickets for agent {}: {}", id, e.getMessage());
         }
+    }
+
+    public boolean agentExists(UUID id) {
+        return agentRepository.existsById(id);
     }
 
     private AgentResponse mapToAgentResponse(Agent agent) {

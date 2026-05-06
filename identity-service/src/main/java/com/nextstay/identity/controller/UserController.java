@@ -1,14 +1,14 @@
 package com.nextstay.identity.controller;
 
-import com.nextstay.common.dto.UpdateProfileRequest;
-import com.nextstay.common.dto.UserResponse;
+import com.nextstay.identity.dto.UpdateProfileRequest;
+import com.nextstay.identity.dto.UserResponse;
 import com.nextstay.identity.entity.UserRole;
-import com.nextstay.identity.repository.UserRepository;
 import com.nextstay.identity.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,7 +18,6 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
-    private final UserRepository userRepository;
 
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
@@ -31,7 +30,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> updateProfile(@PathVariable UUID id, @RequestBody UpdateProfileRequest request) {
+    public ResponseEntity<UserResponse> updateProfile(@PathVariable UUID id, @Valid @RequestBody UpdateProfileRequest request) {
         return ResponseEntity.ok(userService.updateProfile(id, request));
     }
 
@@ -46,16 +45,14 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    // INTERNAL ENDPOINTS
+    // INTERNAL ENDPOINTS — used by other microservices
     @GetMapping("/{id}/exists")
     public ResponseEntity<Boolean> userExists(@PathVariable UUID id) {
-        return ResponseEntity.ok(userRepository.existsById(id));
+        return ResponseEntity.ok(userService.userExists(id));
     }
 
     @GetMapping("/{id}/role")
     public ResponseEntity<UserRole> getUserRole(@PathVariable UUID id) {
-        return userRepository.findById(id)
-                .map(user -> ResponseEntity.ok(user.getRole()))
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(userService.getUserRole(id));
     }
 }

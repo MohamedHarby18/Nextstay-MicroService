@@ -1,15 +1,16 @@
 package com.nextstay.identity.service;
 
-import com.nextstay.common.dto.LoginRequest;
-import com.nextstay.common.dto.UserResponse;
+import com.nextstay.identity.dto.LoginRequest;
+import com.nextstay.identity.dto.UserResponse;
 import com.nextstay.common.exception.ConflictException;
 import com.nextstay.common.exception.UnauthorizedException;
-import com.nextstay.common.security.JwtTokenProvider;
 import com.nextstay.identity.dto.AuthResponse;
 import com.nextstay.identity.dto.RegisterRequest;
 import com.nextstay.identity.entity.User;
 import com.nextstay.identity.entity.UserRole;
 import com.nextstay.identity.repository.UserRepository;
+import com.nextstay.identity.security.JwtTokenProvider;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -82,6 +83,9 @@ public class AuthService {
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
+                .bio(user.getBio())
+                .profilePhoto(user.getProfilePhoto())
                 .role(user.getRole().name())
                 .isVerified(user.getIsVerified())
                 .createdAt(user.getCreatedAt())

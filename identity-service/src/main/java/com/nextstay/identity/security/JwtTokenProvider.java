@@ -1,4 +1,4 @@
-package com.nextstay.common.security;
+package com.nextstay.identity.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

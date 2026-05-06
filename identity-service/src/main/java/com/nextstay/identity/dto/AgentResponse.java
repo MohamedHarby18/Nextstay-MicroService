@@ -1,4 +1,4 @@
-package com.nextstay.common.dto;
+package com.nextstay.identity.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,17 +1,17 @@
 package com.nextstay.identity.controller;
 
-import com.nextstay.common.dto.AgentResponse;
+import com.nextstay.identity.dto.AgentResponse;
 import com.nextstay.identity.dto.AgentLoginRequest;
 import com.nextstay.identity.dto.AgentRegisterRequest;
 import com.nextstay.identity.dto.AuthResponse;
 import com.nextstay.identity.entity.AgentRole;
-import com.nextstay.identity.repository.AgentRepository;
 import com.nextstay.identity.service.AgentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,15 +21,14 @@ import java.util.UUID;
 public class AgentController {
 
     private final AgentService agentService;
-    private final AgentRepository agentRepository;
 
     @PostMapping("/register")
-    public ResponseEntity<AgentResponse> registerAgent(@RequestBody AgentRegisterRequest request) {
+    public ResponseEntity<AgentResponse> registerAgent(@Valid @RequestBody AgentRegisterRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(agentService.registerAgent(request));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> loginAgent(@RequestBody AgentLoginRequest request) {
+    public ResponseEntity<AuthResponse> loginAgent(@Valid @RequestBody AgentLoginRequest request) {
         return ResponseEntity.ok(agentService.loginAgent(request));
     }
 
@@ -59,9 +58,9 @@ public class AgentController {
         return ResponseEntity.noContent().build();
     }
 
-    // INTERNAL ENDPOINTS
+    // INTERNAL ENDPOINT — used by other microservices
     @GetMapping("/{id}/exists")
     public ResponseEntity<Boolean> agentExists(@PathVariable UUID id) {
-        return ResponseEntity.ok(agentRepository.existsById(id));
+        return ResponseEntity.ok(agentService.agentExists(id));
     }
 }
