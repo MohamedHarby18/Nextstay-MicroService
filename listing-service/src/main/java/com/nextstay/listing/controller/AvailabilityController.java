@@ -19,12 +19,12 @@ public class AvailabilityController {
     private final AvailabilityService availabilityService;
 
     // Get all available (unblocked) slots
-    @GetMapping
+    @GetMapping //True
     public ResponseEntity<ApiResponse<List<AvailabilityResponseDto>>> getAvailableSlots(@PathVariable UUID listingId) {
         return ResponseEntity.ok(ApiResponse.success("Success", availabilityService.getAvailableSlots(listingId)));
     }
 
-    // Check availability for a date range
+    // Check availability for a date range True
     @GetMapping("/check")
     public ResponseEntity<ApiResponse<Boolean>> checkAvailability(
             @PathVariable UUID listingId,
@@ -35,7 +35,7 @@ public class AvailabilityController {
         return ResponseEntity.ok(ApiResponse.success("Success", available));
     }
 
-    // FR-07: Host manages availability (block/unblock dates)
+    // FR-07: Host manages availability (block/unblock dates) True
     @PostMapping("/manage")
     public ResponseEntity<ApiResponse<Void>> manageAvailability(
             @PathVariable UUID listingId,

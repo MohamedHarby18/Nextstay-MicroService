@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TransferQueue;
 
 @RestController
 @RequestMapping("/api/listings/{listingId}/amenities")
@@ -19,7 +20,7 @@ public class AmenityController {
 
     private final AmenityService amenityService;
 
-    @PostMapping
+    @PostMapping //true
     public ResponseEntity<ApiResponse<AmenityResponseDto>> addAmenity(
             @PathVariable UUID listingId,
             @Valid @RequestBody AmenityRequestDto request) {
@@ -27,13 +28,13 @@ public class AmenityController {
                 .body(ApiResponse.success("Amenity added", amenityService.addAmenity(listingId, request)));
     }
 
-    @DeleteMapping("/{amenityId}")
+    @DeleteMapping("/{amenityId}") //true
     public ResponseEntity<ApiResponse<Void>> removeAmenity(@PathVariable UUID amenityId) {
         amenityService.removeAmenity(amenityId);
         return ResponseEntity.ok(ApiResponse.success("Amenity removed", null));
     }
 
-    @GetMapping
+    @GetMapping //true
     public ResponseEntity<ApiResponse<List<AmenityResponseDto>>> getAmenitiesByListing(@PathVariable UUID listingId) {
         return ResponseEntity.ok(ApiResponse.success("Success", amenityService.getAmenitiesByListing(listingId)));
     }

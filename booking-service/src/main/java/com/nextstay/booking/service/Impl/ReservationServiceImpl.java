@@ -1,6 +1,7 @@
 package com.nextstay.booking.service.Impl;
 
 import com.nextstay.booking.client.ListingServiceClient;
+import com.nextstay.common.dto.ApiResponse;
 import com.nextstay.booking.dto.ReservationRequest;
 import com.nextstay.booking.dto.ReservationResponse;
 import com.nextstay.booking.entity.Reservation;
@@ -30,7 +31,8 @@ public class ReservationServiceImpl implements ReservationService {
     @Transactional
     public ReservationResponse createReservation(UUID guestId, ReservationRequest request) {
         // Verify listing is ACTIVE via Listing Service
-        ListingResponse listing = listingClient.getListingById(request.getListingId());
+        ApiResponse<ListingResponse> listingApiResponse = listingClient.getListingById(request.getListingId());
+        ListingResponse listing = (listingApiResponse != null) ? listingApiResponse.getData() : null;
         if (listing == null || !"ACTIVE".equals(listing.getStatus())) {
             throw new IllegalStateException("Listing is not available");
         }
@@ -77,7 +79,8 @@ public class ReservationServiceImpl implements ReservationService {
         }
 
         // Verify that the caller is the host of the listing
-        ListingResponse listing = listingClient.getListingById(reservation.getListingId());
+        ApiResponse<ListingResponse> approveApiResponse = listingClient.getListingById(reservation.getListingId());
+        ListingResponse listing = (approveApiResponse != null) ? approveApiResponse.getData() : null;
         if (listing == null || !listing.getHostId().equals(hostId)) {
             throw new ForbiddenException("Only the listing owner can approve this reservation");
         }
@@ -97,7 +100,8 @@ public class ReservationServiceImpl implements ReservationService {
             throw new IllegalStateException("Only pending reservations can be declined");
         }
 
-        ListingResponse listing = listingClient.getListingById(reservation.getListingId());
+        ApiResponse<ListingResponse> declineApiResponse = listingClient.getListingById(reservation.getListingId());
+        ListingResponse listing = (declineApiResponse != null) ? declineApiResponse.getData() : null;
         if (listing == null || !listing.getHostId().equals(hostId)) {
             throw new ForbiddenException("Only the listing owner can decline this reservation");
         }

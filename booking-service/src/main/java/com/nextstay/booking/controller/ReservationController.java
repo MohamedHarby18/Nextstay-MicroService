@@ -19,7 +19,7 @@ public class ReservationController {
 
     private final ReservationService reservationService;
 
-    // FR-09: Create a reservation (Guest)
+    // FR-09: Create a reservation (Guest) True
     @PostMapping
     public ResponseEntity<ReservationResponse> createReservation(
             @RequestHeader("X-User-Id") UUID guestId,
@@ -32,7 +32,7 @@ public class ReservationController {
                 .body(reservationService.createReservation(guestId, request));
     }
 
-    // FR-11: Host approve
+    // FR-11: Host approve True
     @PutMapping("/{id}/approve")
     public ResponseEntity<ReservationResponse> approveReservation(
             @PathVariable UUID id,
@@ -44,7 +44,7 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.approveReservation(id, hostId));
     }
 
-    // FR-11: Host decline
+    // FR-11: Host decline Not Working
     @PutMapping("/{id}/decline")
     public ResponseEntity<ReservationResponse> declineReservation(
             @PathVariable UUID id,
@@ -56,7 +56,7 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.declineReservation(id, hostId));
     }
 
-    // FR-11: Guest cancel (only when confirmed)
+    // FR-11: Guest cancel (only when confirmed) True
     @PutMapping("/{id}/cancel")
     public ResponseEntity<ReservationResponse> cancelReservation(
             @PathVariable UUID id,
@@ -68,13 +68,13 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.cancelReservation(id, guestId));
     }
 
-    // Get one reservation
+    // Get one reservation True
     @GetMapping("/{id}")
     public ResponseEntity<ReservationResponse> getReservation(@PathVariable UUID id) {
         return ResponseEntity.ok(reservationService.getReservation(id));
     }
 
-    // Get my reservations (current user)
+    // Get my reservations (current user) True
     @GetMapping("/my")
     public ResponseEntity<List<ReservationResponse>> getMyReservations(
             @RequestHeader("X-User-Id") UUID userId) {
