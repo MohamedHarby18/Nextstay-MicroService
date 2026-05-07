@@ -1,4 +1,4 @@
-package com.nextstay.identity.config;
+package com.nextstay.identity.security;
 
 import com.nextstay.identity.entity.Agent;
 import com.nextstay.identity.entity.User;

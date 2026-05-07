@@ -31,16 +31,25 @@ public class AuthService {
             throw new ConflictException("Email already taken");
         }
 
+        // Only GUEST or HOST may be self-assigned — ADMIN is never self-assignable
+        UserRole assignedRole = UserRole.GUEST;
+        if (request.getRole() != null) {
+            String r = request.getRole().toUpperCase();
+            if (r.equals("HOST")) assignedRole = UserRole.HOST;
+            // Any other value (including ADMIN) falls back to GUEST
+        }
+
         User user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole() != null ? UserRole.valueOf(request.getRole().toUpperCase()) : UserRole.GUEST)
+                .role(assignedRole)
                 .isVerified(false)
+                .isFlagged(false)
+                .isActive(true)
                 .build();
 
         user = userRepository.save(user);
-
         return mapToUserResponse(user);
     }
 
@@ -50,6 +59,11 @@ public class AuthService {
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new UnauthorizedException("Invalid credentials");
+        }
+
+        // Block deactivated accounts
+        if (Boolean.FALSE.equals(user.getIsActive())) {
+            throw new UnauthorizedException("Your account has been deactivated. Please contact support.");
         }
 
         user.setLastLoginAt(LocalDateTime.now());
@@ -72,13 +86,12 @@ public class AuthService {
     public void verifyEmail(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        
         user.setIsVerified(true);
         user.setVerifiedAt(LocalDateTime.now());
         userRepository.save(user);
     }
 
-    private UserResponse mapToUserResponse(User user) {
+    public UserResponse mapToUserResponse(User user) {
         return UserResponse.builder()
                 .id(user.getId())
                 .name(user.getName())
@@ -88,6 +101,8 @@ public class AuthService {
                 .profilePhoto(user.getProfilePhoto())
                 .role(user.getRole().name())
                 .isVerified(user.getIsVerified())
+                .isFlagged(user.getIsFlagged())
+                .isActive(user.getIsActive())
                 .createdAt(user.getCreatedAt())
                 .build();
     }

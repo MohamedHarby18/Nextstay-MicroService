@@ -19,6 +19,8 @@ public class UserController {
 
     private final UserService userService;
 
+    // ─── Profile ──────────────────────────────────────────────────────────────
+
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.getUserById(id));
@@ -30,7 +32,9 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> updateProfile(@PathVariable UUID id, @Valid @RequestBody UpdateProfileRequest request) {
+    public ResponseEntity<UserResponse> updateProfile(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateProfileRequest request) {
         return ResponseEntity.ok(userService.updateProfile(id, request));
     }
 
@@ -45,7 +49,35 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    // INTERNAL ENDPOINTS — used by other microservices
+    // ─── User Moderation (Users' Admin) ───────────────────────────────────────
+
+    /** Flag a user (based on SA internal communication) */
+    @PutMapping("/{id}/flag")
+    public ResponseEntity<UserResponse> flagUser(@PathVariable UUID id) {
+        return ResponseEntity.ok(userService.flagUser(id));
+    }
+
+    /** Unflag a previously flagged user */
+    @PutMapping("/{id}/unflag")
+    public ResponseEntity<UserResponse> unflagUser(@PathVariable UUID id) {
+        return ResponseEntity.ok(userService.unflagUser(id));
+    }
+
+    /** Deactivate a user account (resolved deactivation ticket) */
+    @PutMapping("/{id}/deactivate")
+    public ResponseEntity<Void> deactivateUser(@PathVariable UUID id) {
+        userService.deactivateUser(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    /** Reactivate a previously deactivated account */
+    @PutMapping("/{id}/reactivate")
+    public ResponseEntity<UserResponse> reactivateUser(@PathVariable UUID id) {
+        return ResponseEntity.ok(userService.reactivateUser(id));
+    }
+
+    // ─── Internal endpoints — used by other microservices ─────────────────────
+
     @GetMapping("/{id}/exists")
     public ResponseEntity<Boolean> userExists(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.userExists(id));
@@ -55,4 +87,5 @@ public class UserController {
     public ResponseEntity<UserRole> getUserRole(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.getUserRole(id));
     }
+
 }

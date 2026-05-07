@@ -11,4 +11,10 @@ public interface BookingServiceClient {
 
     @GetMapping("/api/reservations/{reservationId}/verify-completed")
     Boolean verifyReservationCompleted(@PathVariable("reservationId") UUID reservationId);
+
+    // Security check: ensure the reservation belongs to the requesting guest
+    @GetMapping("/api/reservations/{reservationId}/guest/{guestId}/verify")
+    Boolean verifyReservationOwnership(
+            @PathVariable("reservationId") UUID reservationId,
+            @PathVariable("guestId") UUID guestId);
 }
