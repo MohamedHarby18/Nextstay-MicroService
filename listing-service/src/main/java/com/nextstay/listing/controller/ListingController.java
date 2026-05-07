@@ -19,7 +19,7 @@ public class ListingController {
 
     private final ListingService listingService;
 
-    // FR-05: Create listing (Host only)
+    // FR-05: Create listing (Host only) true
     @PostMapping
     public ResponseEntity<ApiResponse<ListingResponseDto>> createListing(
             @RequestHeader("X-User-Id") UUID hostId,
@@ -29,7 +29,7 @@ public class ListingController {
                 .body(ApiResponse.success("Listing created", listing));
     }
 
-    // Update listing
+    // Update listing true
     @PutMapping("/{listingId}")
     public ResponseEntity<ApiResponse<ListingResponseDto>> updateListing(
             @PathVariable UUID listingId,
@@ -48,25 +48,25 @@ public class ListingController {
         return ResponseEntity.ok(ApiResponse.success("Listing deleted", null));
     }
 
-    // Get single listing
+    // Get single listing true
     @GetMapping("/{listingId}")
     public ResponseEntity<ApiResponse<ListingResponseDto>> getListingById(@PathVariable UUID listingId) {
         return ResponseEntity.ok(ApiResponse.success("Success", listingService.getListingById(listingId)));
     }
 
-    // Get all active listings
+    // Get all active listings True
     @GetMapping
     public ResponseEntity<ApiResponse<List<ListingResponseDto>>> getAllActiveListings() {
         return ResponseEntity.ok(ApiResponse.success("Success", listingService.getAllActiveListings()));
     }
 
-    // Get listings by host
+    // Get listings by host True
     @GetMapping("/host/{hostId}")
     public ResponseEntity<ApiResponse<List<ListingResponseDto>>> getListingsByHost(@PathVariable UUID hostId) {
         return ResponseEntity.ok(ApiResponse.success("Success", listingService.getListingsByHost(hostId)));
     }
 
-    // FR-06: Search listings (guest)
+    // FR-06: Search listings (guest) True
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<List<ListingResponseDto>>> searchListings(
             @RequestParam(required = false) String location,
@@ -76,7 +76,7 @@ public class ListingController {
                 listingService.searchListings(location, minPrice, maxPrice)));
     }
 
-    // FR-08: Admin verification
+    // FR-08: Admin verification True
     @PutMapping("/{listingId}/verify")
     public ResponseEntity<ApiResponse<Void>> verifyListing(
             @PathVariable UUID listingId,
