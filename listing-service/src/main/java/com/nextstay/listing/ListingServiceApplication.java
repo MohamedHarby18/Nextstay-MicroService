@@ -6,10 +6,10 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-@SpringBootApplication(scanBasePackages = "com.nextstay")
+@SpringBootApplication
 @EnableDiscoveryClient
 @EnableFeignClients
-@EnableJpaAuditing
+@EnableJpaAuditing   // ← required for @CreatedDate / @LastModifiedDate
 public class ListingServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(ListingServiceApplication.class, args);

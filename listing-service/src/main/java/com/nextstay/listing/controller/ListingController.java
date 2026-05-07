@@ -1,14 +1,14 @@
 package com.nextstay.listing.controller;
 
-import com.nextstay.common.dto.ListingResponse;
-import com.nextstay.listing.dto.ListingRequest;
+import com.nextstay.listing.dto.request.*;
+import com.nextstay.listing.dto.response.*;
 import com.nextstay.listing.service.ListingService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,48 +19,79 @@ public class ListingController {
 
     private final ListingService listingService;
 
+    // FR-05: Create listing (Host only)
     @PostMapping
-    public ResponseEntity<ListingResponse> createListing(@RequestHeader("X-User-Id") UUID hostId, @RequestBody ListingRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(listingService.createListing(hostId, request));
+    public ResponseEntity<ApiResponse<ListingResponseDto>> createListing(
+            @RequestHeader("X-User-Id") UUID hostId,
+            @Valid @RequestBody ListingRequestDto request) {
+        ListingResponseDto listing = listingService.createListing(hostId, request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Listing created", listing));
     }
 
+    // Update listing
     @PutMapping("/{listingId}")
-    public ResponseEntity<ListingResponse> updateListing(@PathVariable UUID listingId, @RequestHeader("X-User-Id") UUID hostId, @RequestBody ListingRequest request) {
-        return ResponseEntity.ok(listingService.updateListing(listingId, hostId, request));
+    public ResponseEntity<ApiResponse<ListingResponseDto>> updateListing(
+            @PathVariable UUID listingId,
+            @RequestHeader("X-User-Id") UUID hostId,
+            @Valid @RequestBody ListingUpdateRequestDto request) {
+        ListingResponseDto listing = listingService.updateListing(listingId, hostId, request);
+        return ResponseEntity.ok(ApiResponse.success("Listing updated", listing));
     }
 
+    // Delete listing
     @DeleteMapping("/{listingId}")
-    public ResponseEntity<Void> deleteListing(@PathVariable UUID listingId, @RequestHeader("X-User-Id") UUID hostId) {
+    public ResponseEntity<ApiResponse<Void>> deleteListing(
+            @PathVariable UUID listingId,
+            @RequestHeader("X-User-Id") UUID hostId) {
         listingService.deleteListing(listingId, hostId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success("Listing deleted", null));
     }
 
+    // Get single listing
     @GetMapping("/{listingId}")
-    public ResponseEntity<ListingResponse> getListingById(@PathVariable UUID listingId) {
-        return ResponseEntity.ok(listingService.getListingById(listingId));
+    public ResponseEntity<ApiResponse<ListingResponseDto>> getListingById(@PathVariable UUID listingId) {
+        return ResponseEntity.ok(ApiResponse.success("Success", listingService.getListingById(listingId)));
     }
 
+    // Get all active listings
     @GetMapping
-    public ResponseEntity<List<ListingResponse>> getAllActiveListings() {
-        return ResponseEntity.ok(listingService.getAllActiveListings());
+    public ResponseEntity<ApiResponse<List<ListingResponseDto>>> getAllActiveListings() {
+        return ResponseEntity.ok(ApiResponse.success("Success", listingService.getAllActiveListings()));
     }
 
+    // Get listings by host
     @GetMapping("/host/{hostId}")
-    public ResponseEntity<List<ListingResponse>> getListingsByHost(@PathVariable UUID hostId) {
-        return ResponseEntity.ok(listingService.getListingsByHost(hostId));
+    public ResponseEntity<ApiResponse<List<ListingResponseDto>>> getListingsByHost(@PathVariable UUID hostId) {
+        return ResponseEntity.ok(ApiResponse.success("Success", listingService.getListingsByHost(hostId)));
     }
 
+    // FR-06: Search listings (guest)
     @GetMapping("/search")
-    public ResponseEntity<List<ListingResponse>> searchListings(
+    public ResponseEntity<ApiResponse<List<ListingResponseDto>>> searchListings(
             @RequestParam(required = false) String location,
-            @RequestParam(required = false) BigDecimal minPrice,
-            @RequestParam(required = false) BigDecimal maxPrice) {
-        return ResponseEntity.ok(listingService.searchListings(location, minPrice, maxPrice));
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice) {
+        return ResponseEntity.ok(ApiResponse.success("Success",
+                listingService.searchListings(location, minPrice, maxPrice)));
     }
 
+    // FR-08: Admin verification
+    @PutMapping("/{listingId}/verify")
+    public ResponseEntity<ApiResponse<Void>> verifyListing(
+            @PathVariable UUID listingId,
+            @RequestHeader("X-User-Id") UUID adminId,
+            @Valid @RequestBody AdminListingActionDto action) {
+        listingService.verifyListing(listingId, action, adminId);
+        return ResponseEntity.ok(ApiResponse.success("Listing status updated", null));
+    }
+
+    // Called internally by Review Service to update average rating
     @PutMapping("/{listingId}/rating")
-    public ResponseEntity<Void> updateAverageRating(@PathVariable UUID listingId, @RequestParam Double newRating) {
+    public ResponseEntity<ApiResponse<Void>> updateAverageRating(
+            @PathVariable UUID listingId,
+            @RequestParam Double newRating) {
         listingService.updateAverageRating(listingId, newRating);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success("Rating updated", null));
     }
 }
