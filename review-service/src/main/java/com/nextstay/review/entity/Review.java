@@ -1,12 +1,14 @@
 package com.nextstay.review.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
-import java.time.LocalDateTime;
-import java.util.UUID;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -14,9 +16,11 @@ import jakarta.validation.constraints.Min;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public class Review {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(name = "guest_id", nullable = false)
@@ -36,8 +40,11 @@ public class Review {
     @Column(columnDefinition = "TEXT")
     private String comment;
 
-    @Column(name = "created_at", nullable = false)
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
+    @Column(name = "is_flagged", nullable = false)
+    @Builder.Default
+    private Boolean isFlagged = false;
 }

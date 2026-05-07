@@ -1,4 +1,4 @@
-package com.nextstay.identity.dto;
+package com.nextstay.support.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,16 +12,11 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserResponse {
+public class AgentResponse {
     private UUID id;
     private String name;
     private String email;
-    private String phoneNumber;
-    private String bio;
-    private String profilePhoto;
     private String role;
-    private Boolean isVerified;
-    private Boolean isFlagged;
     private Boolean isActive;
     private LocalDateTime createdAt;
 }

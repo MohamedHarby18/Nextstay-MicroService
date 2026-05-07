@@ -1,11 +1,11 @@
 package com.nextstay.review.service;
 
-import com.nextstay.common.dto.HostResponseRequest;
 import com.nextstay.common.dto.ListingResponse;
 import com.nextstay.common.exception.ConflictException;
 import com.nextstay.common.exception.ResourceNotFoundException;
 import com.nextstay.common.exception.UnauthorizedException;
 import com.nextstay.review.client.ListingServiceClient;
+import com.nextstay.review.dto.HostResponseRequest;
 import com.nextstay.review.dto.HostResponseResponse;
 import com.nextstay.review.entity.HostResponse;
 import com.nextstay.review.entity.Review;

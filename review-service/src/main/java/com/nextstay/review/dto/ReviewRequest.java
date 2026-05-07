@@ -1,4 +1,4 @@
-package com.nextstay.common.dto;
+package com.nextstay.review.dto;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

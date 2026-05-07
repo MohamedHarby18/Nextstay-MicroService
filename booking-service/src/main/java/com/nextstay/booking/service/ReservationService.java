@@ -38,7 +38,7 @@ public class ReservationService {
 
         // 1. Get listing details
         ListingResponse listing = listingServiceClient.getListingById(request.getListingId());
-        
+
         // 2. Validate guests
         if (request.getNumGuests() > listing.getMaxGuests()) {
             throw new BadRequestException("Number of guests exceeds listing maximum capacity");
@@ -56,8 +56,7 @@ public class ReservationService {
                 request.getListingId(),
                 Arrays.asList(ReservationStatus.PENDING, ReservationStatus.CONFIRMED),
                 request.getCheckOutDate(),
-                request.getCheckInDate()
-        );
+                request.getCheckInDate());
         if (!overlapping.isEmpty()) {
             throw new ConflictException("There are overlapping reservations for the selected dates");
         }
@@ -96,7 +95,8 @@ public class ReservationService {
         reservation = reservationRepository.save(reservation);
 
         // Unblock dates
-        BlockDatesRequest unblockRequest = new BlockDatesRequest(reservation.getCheckInDate(), reservation.getCheckOutDate());
+        BlockDatesRequest unblockRequest = new BlockDatesRequest(reservation.getCheckInDate(),
+                reservation.getCheckOutDate());
         try {
             listingServiceClient.unblockDates(reservation.getListingId(), unblockRequest);
         } catch (Exception e) {

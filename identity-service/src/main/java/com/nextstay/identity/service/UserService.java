@@ -23,39 +23,32 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     public UserResponse getUserById(UUID id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return mapToUserResponse(user);
+        return mapToUserResponse(userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found")));
     }
 
     public UserResponse getUserByEmail(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return mapToUserResponse(user);
+        return mapToUserResponse(userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found")));
     }
 
     public UserResponse updateProfile(UUID id, UpdateProfileRequest request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        // Handle name update
         if (request.getName() != null && !request.getName().isBlank()) {
             user.setName(request.getName());
         }
-
         if (request.getPhoneNumber() != null) {
             user.setPhoneNumber(request.getPhoneNumber());
         }
-
         if (request.getBio() != null) {
             user.setBio(request.getBio());
         }
-
         if (request.getProfilePhoto() != null) {
             user.setProfilePhoto(request.getProfilePhoto());
         }
 
-        // Handle password change
         if (request.getNewPassword() != null) {
             if (request.getOldPassword() == null || request.getOldPassword().isBlank()) {
                 throw new BadRequestException("Old password is required to set a new password");
@@ -66,8 +59,7 @@ public class UserService {
             user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         }
 
-        user = userRepository.save(user);
-        return mapToUserResponse(user);
+        return mapToUserResponse(userRepository.save(user));
     }
 
     public List<UserResponse> getAllUsers() {
@@ -83,6 +75,42 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
+    // ─── User Moderation (Users' Admin) ───────────────────────────────────────
+
+    /** Flag a user based on SA internal communication */
+    public UserResponse flagUser(UUID id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        user.setIsFlagged(true);
+        return mapToUserResponse(userRepository.save(user));
+    }
+
+    /** Unflag a previously flagged user */
+    public UserResponse unflagUser(UUID id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        user.setIsFlagged(false);
+        return mapToUserResponse(userRepository.save(user));
+    }
+
+    /** Deactivate a user account (e.g. after a deactivation ticket is resolved) */
+    public void deactivateUser(UUID id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        user.setIsActive(false);
+        userRepository.save(user);
+    }
+
+    /** Reactivate a previously deactivated user */
+    public UserResponse reactivateUser(UUID id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        user.setIsActive(true);
+        return mapToUserResponse(userRepository.save(user));
+    }
+
+    // ─── Internal endpoints for other services ────────────────────────────────
+
     public boolean userExists(UUID id) {
         return userRepository.existsById(id);
     }
@@ -93,7 +121,9 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
-    private UserResponse mapToUserResponse(User user) {
+    // ─── Mapper ───────────────────────────────────────────────────────────────
+
+    public UserResponse mapToUserResponse(User user) {
         return UserResponse.builder()
                 .id(user.getId())
                 .name(user.getName())
@@ -103,6 +133,8 @@ public class UserService {
                 .profilePhoto(user.getProfilePhoto())
                 .role(user.getRole().name())
                 .isVerified(user.getIsVerified())
+                .isFlagged(user.getIsFlagged())
+                .isActive(user.getIsActive())
                 .createdAt(user.getCreatedAt())
                 .build();
     }

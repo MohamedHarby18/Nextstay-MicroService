@@ -1,8 +1,11 @@
-package com.nextstay.identity.config;
+package com.nextstay.identity.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -16,14 +19,30 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
+    
+    @Value("${password.encoding.pepper}") //retrieves pepper
+    private String pepper;
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+        return new PasswordEncoder() {
+            @Override
+            public String encode(CharSequence rawPassword) {
+                // wraps bcrypt to include pepper for extra layer of security
+                return bCryptPasswordEncoder.encode(rawPassword + pepper);
+            }
+
+            @Override
+            public boolean matches(CharSequence rawPassword, String encodedPassword) {
+                return bCryptPasswordEncoder.matches(rawPassword + pepper, encodedPassword);
+            }
+        };
     }
 
     @Bean

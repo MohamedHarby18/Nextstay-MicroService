@@ -19,6 +19,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -49,17 +50,25 @@ public class User {
 
     private String profilePhoto;
 
+    // Users' Admin can flag a user based on SA communication
+    @Column(name = "is_flagged", nullable = false)
+    @Builder.Default
+    private Boolean isFlagged = false;
+
+    // Users' Admin can deactivate an account (e.g. after a deactivation ticket is resolved) 
+    @Column(name = "is_active", nullable = false)
+    @Builder.Default
+    private Boolean isActive = true;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
-    
+
     @PrePersist
     public void prePersist() {
-        if (role == null) {
-            role = UserRole.GUEST;
-        }
-        if (isVerified == null) {
-            isVerified = false;
-        }
+        if (role == null)       role = UserRole.GUEST;
+        if (isVerified == null) isVerified = false;
+        if (isFlagged == null)  isFlagged = false;
+        if (isActive == null)   isActive = true;
     }
 }

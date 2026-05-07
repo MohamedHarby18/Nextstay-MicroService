@@ -12,6 +12,7 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
     // Find all reviews written by a specific guest (for profile page)
     List<Review> findByGuestId(UUID guestId);
 
-    // Check if a reservation already has a review to prevent duplicates by the same guest
+    // Check if a reservation already has a review to prevent duplicates by the same
+    // guest
     boolean existsByReservationId(UUID reservationId);
 }

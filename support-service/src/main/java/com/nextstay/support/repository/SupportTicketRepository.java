@@ -7,11 +7,24 @@ import java.util.List;
 import java.util.UUID;
 
 public interface SupportTicketRepository extends JpaRepository<SupportTicket, UUID> {
-    // For Users to see their own history
-    List<SupportTicket> findByUserIdOrderByCreatedAtDesc(UUID userId);
-    
-    // For Agents to see their dashboard
-    List<SupportTicket> findByStatus(SupportTicket.TicketStatus status);
-    List<SupportTicket> findByAssignedAgentId(UUID agentId);
+
+    // User: view their own ticket history
     List<SupportTicket> findByUserId(UUID userId);
+
+    List<SupportTicket> findByUserIdOrderByCreatedAtDesc(UUID userId);
+
+    // Agent dashboard: filter by status only
+    List<SupportTicket> findByStatus(SupportTicket.TicketStatus status);
+
+    List<SupportTicket> findAllByOrderByCreatedAtDesc();
+
+    // Agent assignment
+    List<SupportTicket> findByAssignedAgentId(UUID agentId);
+
+    List<SupportTicket> findByAssignedAgentIdAndStatus(UUID agentId, SupportTicket.TicketStatus status);
+
+    // Users' Admin: action-needed tickets
+    List<SupportTicket> findByActionNeededTrue();
+
+    List<SupportTicket> findByActionNeededTrueAndActionType(SupportTicket.ActionType actionType);
 }

@@ -1,4 +1,4 @@
-package com.nextstay.common.dto;
+package com.nextstay.review.dto;
 
 import lombok.Data;
 import java.util.UUID;

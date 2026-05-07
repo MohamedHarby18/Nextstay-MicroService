@@ -1,7 +1,7 @@
 package com.nextstay.support.controller;
 
-import com.nextstay.common.dto.CreateTicketRequest;
-import com.nextstay.common.dto.TicketMessageRequest;
+import com.nextstay.support.dto.CreateTicketRequest;
+import com.nextstay.support.dto.TicketMessageRequest;
 import com.nextstay.support.entity.SupportTicket;
 import com.nextstay.support.entity.TicketMessage;
 import com.nextstay.support.service.SupportService;
@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -19,26 +20,46 @@ public class SupportController {
 
     private final SupportService supportService;
 
+    // ─── Guest / Host: create & view own tickets ──────────────────────────────
+
     @PostMapping
-    public ResponseEntity<SupportTicket> createTicket(@RequestHeader("X-User-Id") UUID userId, @RequestBody CreateTicketRequest request) {
-        return ResponseEntity.ok(supportService.createTicket(userId, request));
+    public ResponseEntity<SupportTicket> createTicket(
+            @RequestHeader("X-User-Id") UUID userId,
+            @RequestHeader("X-User-Role") String userRole,
+            @RequestBody CreateTicketRequest request) {
+        return ResponseEntity.ok(supportService.createTicket(userId, userRole, request));
     }
 
-    @GetMapping
-    public ResponseEntity<List<SupportTicket>> getMyTickets(@RequestHeader("X-User-Id") UUID userId) {
+    @GetMapping("/my")
+    public ResponseEntity<List<SupportTicket>> getMyTickets(
+            @RequestHeader("X-User-Id") UUID userId) {
         return ResponseEntity.ok(supportService.getUserTickets(userId));
     }
 
+    // ─── Messages ─────────────────────────────────────────────────────────────
+
     @PostMapping("/{ticketId}/messages")
     public ResponseEntity<TicketMessage> replyToTicket(
-            @PathVariable UUID ticketId, 
+            @PathVariable UUID ticketId,
             @RequestHeader("X-User-Id") UUID senderId,
+            @RequestHeader("X-User-Role") String senderRole,
             @RequestBody TicketMessageRequest request) {
-        return ResponseEntity.ok(supportService.replyToTicket(ticketId, senderId, request.getMessageText()));
+        return ResponseEntity
+                .ok(supportService.replyToTicket(ticketId, senderId, senderRole, request.getMessageText()));
     }
 
+    @GetMapping("/{ticketId}/messages")
+    public ResponseEntity<List<TicketMessage>> getTicketMessages(
+            @PathVariable UUID ticketId) {
+        return ResponseEntity.ok(supportService.getTicketMessages(ticketId));
+    }
+
+    // ─── Assignment (Employees' Admin) ────────────────────────────────────────
+
     @PutMapping("/{ticketId}/assign/{agentId}")
-    public ResponseEntity<SupportTicket> assignTicket(@PathVariable UUID ticketId, @PathVariable UUID agentId) {
+    public ResponseEntity<SupportTicket> assignTicket(
+            @PathVariable UUID ticketId,
+            @PathVariable UUID agentId) {
         return ResponseEntity.ok(supportService.assignTicket(ticketId, agentId));
     }
 
@@ -53,4 +74,56 @@ public class SupportController {
         supportService.unassignTicketsForAgent(agentId);
         return ResponseEntity.ok().build();
     }
+
+    // ─── Status Transitions (Support Agent) ───────────────────────────────────
+
+    @PutMapping("/{ticketId}/status")
+    public ResponseEntity<SupportTicket> updateTicketStatus(
+            @PathVariable UUID ticketId,
+            @RequestHeader("X-User-Role") String role,
+            @RequestParam String status) {
+        return ResponseEntity.ok(supportService.updateTicketStatus(ticketId, role, status));
+    }
+
+    // ─── Agent Dashboard — status filter only ─────────────────────────────────
+
+    @GetMapping("/dashboard")
+    public ResponseEntity<List<SupportTicket>> getAgentDashboard(
+            @RequestHeader("X-User-Role") String role,
+            @RequestParam(required = false) String status) {
+        return ResponseEntity.ok(supportService.getFilteredTickets(status));
+    }
+
+    // ─── Action-needed (SA flags → Users' Admin resolves) ────────────────────
+
+    @PutMapping("/{ticketId}/flag-action")
+    public ResponseEntity<SupportTicket> flagActionNeeded(
+            @PathVariable UUID ticketId,
+            @RequestHeader("X-User-Role") String role,
+            @RequestParam String actionType) { // "refund" or "deactivation"
+        return ResponseEntity.ok(supportService.flagActionNeeded(ticketId, role, actionType));
+    }
+
+    @GetMapping("/action-needed")
+    public ResponseEntity<List<SupportTicket>> getActionNeededTickets(
+            @RequestHeader("X-User-Role") String role,
+            @RequestParam(required = false) String actionType) {
+        return ResponseEntity.ok(supportService.getActionNeededTickets(actionType));
+    }
+
+    // ─── Agent Performance Stats (Employees' Admin) ───────────────────────────
+
+    @GetMapping("/agent/{agentId}/stats")
+    public ResponseEntity<Map<String, Long>> getAgentStats(
+            @PathVariable UUID agentId) {
+        return ResponseEntity.ok(supportService.getAgentStats(agentId));
+    }
+
+    @GetMapping("/stats/overall")
+    public ResponseEntity<Map<String, Long>> getOverallStats() {
+        return ResponseEntity.ok(supportService.getOverallStats());
+    }
+
 }
+
+    

@@ -1,4 +1,4 @@
-package com.nextstay.identity.config;
+package com.nextstay.identity.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -14,8 +14,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import com.nextstay.identity.security.JwtTokenProvider;
 
 import java.io.IOException;
 
@@ -52,7 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = getJwtFromRequest(request);
 
-            if (jwt != null && jwtTokenProvider.validateToken(jwt)) {
+            if (jwt != null && jwtTokenProvider.validateJwtToken(jwt)) {
                 String username = jwtTokenProvider.getUsernameFromJwtToken(jwt);
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
