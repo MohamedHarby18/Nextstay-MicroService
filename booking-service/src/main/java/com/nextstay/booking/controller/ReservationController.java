@@ -1,8 +1,9 @@
 package com.nextstay.booking.controller;
 
 import com.nextstay.booking.dto.ReservationRequest;
+import com.nextstay.booking.dto.ReservationResponse;
 import com.nextstay.booking.service.ReservationService;
-import com.nextstay.common.dto.ReservationResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,43 +19,65 @@ public class ReservationController {
 
     private final ReservationService reservationService;
 
+    // FR-09: Create a reservation (Guest)
     @PostMapping
     public ResponseEntity<ReservationResponse> createReservation(
             @RequestHeader("X-User-Id") UUID guestId,
-            @RequestBody ReservationRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(reservationService.createReservation(guestId, request));
+            @RequestHeader("X-User-Role") String role,
+            @Valid @RequestBody ReservationRequest request) {
+        if (!"GUEST".equals(role)) {
+            throw new SecurityException("Only guests can create bookings");
+        }
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(reservationService.createReservation(guestId, request));
     }
 
-    @PutMapping("/{reservationId}/cancel")
+    // FR-11: Host approve
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<ReservationResponse> approveReservation(
+            @PathVariable UUID id,
+            @RequestHeader("X-User-Id") UUID hostId,
+            @RequestHeader("X-User-Role") String role) {
+        if (!"HOST".equals(role)) {
+            throw new SecurityException("Only hosts can approve reservations");
+        }
+        return ResponseEntity.ok(reservationService.approveReservation(id, hostId));
+    }
+
+    // FR-11: Host decline
+    @PutMapping("/{id}/decline")
+    public ResponseEntity<ReservationResponse> declineReservation(
+            @PathVariable UUID id,
+            @RequestHeader("X-User-Id") UUID hostId,
+            @RequestHeader("X-User-Role") String role) {
+        if (!"HOST".equals(role)) {
+            throw new SecurityException("Only hosts can decline reservations");
+        }
+        return ResponseEntity.ok(reservationService.declineReservation(id, hostId));
+    }
+
+    // FR-11: Guest cancel (only when confirmed)
+    @PutMapping("/{id}/cancel")
     public ResponseEntity<ReservationResponse> cancelReservation(
-            @PathVariable UUID reservationId,
-            @RequestHeader("X-User-Id") UUID guestId) {
-        return ResponseEntity.ok(reservationService.cancelReservation(reservationId, guestId));
+            @PathVariable UUID id,
+            @RequestHeader("X-User-Id") UUID guestId,
+            @RequestHeader("X-User-Role") String role) {
+        if (!"GUEST".equals(role)) {
+            throw new SecurityException("Only guests can cancel reservations");
+        }
+        return ResponseEntity.ok(reservationService.cancelReservation(id, guestId));
     }
 
-    @PutMapping("/{reservationId}/complete")
-    public ResponseEntity<ReservationResponse> completeReservation(@PathVariable UUID reservationId) {
-        return ResponseEntity.ok(reservationService.completeReservation(reservationId));
+    // Get one reservation
+    @GetMapping("/{id}")
+    public ResponseEntity<ReservationResponse> getReservation(@PathVariable UUID id) {
+        return ResponseEntity.ok(reservationService.getReservation(id));
     }
 
-    @GetMapping("/{reservationId}")
-    public ResponseEntity<ReservationResponse> getReservationById(@PathVariable UUID reservationId) {
-        return ResponseEntity.ok(reservationService.getReservationById(reservationId));
-    }
-
-    @GetMapping("/guest/{guestId}")
-    public ResponseEntity<List<ReservationResponse>> getReservationsByGuest(@PathVariable UUID guestId) {
-        return ResponseEntity.ok(reservationService.getReservationsByGuest(guestId));
-    }
-
-    @GetMapping("/listing/{listingId}")
-    public ResponseEntity<List<ReservationResponse>> getReservationsByListing(@PathVariable UUID listingId) {
-        return ResponseEntity.ok(reservationService.getReservationsByListing(listingId));
-    }
-
-    // INTERNAL ENDPOINT
-    @GetMapping("/{reservationId}/verify-completed")
-    public ResponseEntity<Boolean> verifyReservationCompleted(@PathVariable UUID reservationId) {
-        return ResponseEntity.ok(reservationService.verifyReservationCompleted(reservationId));
+    // Get my reservations (current user)
+    @GetMapping("/my")
+    public ResponseEntity<List<ReservationResponse>> getMyReservations(
+            @RequestHeader("X-User-Id") UUID userId) {
+        return ResponseEntity.ok(reservationService.getReservationsByUser(userId));
     }
 }
