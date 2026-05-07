@@ -1,7 +1,8 @@
 package com.nextstay.listing.controller;
 
-import com.nextstay.listing.dto.AmenityRequest;
-import com.nextstay.listing.dto.AmenityResponse;
+import jakarta.validation.Valid;
+import com.nextstay.listing.dto.request.AmenityRequestDto;
+import com.nextstay.listing.dto.response.*;
 import com.nextstay.listing.service.AmenityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,18 +20,21 @@ public class AmenityController {
     private final AmenityService amenityService;
 
     @PostMapping
-    public ResponseEntity<AmenityResponse> addAmenity(@PathVariable UUID listingId, @RequestBody AmenityRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(amenityService.addAmenity(listingId, request));
+    public ResponseEntity<ApiResponse<AmenityResponseDto>> addAmenity(
+            @PathVariable UUID listingId,
+            @Valid @RequestBody AmenityRequestDto request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Amenity added", amenityService.addAmenity(listingId, request)));
     }
 
     @DeleteMapping("/{amenityId}")
-    public ResponseEntity<Void> removeAmenity(@PathVariable UUID listingId, @PathVariable UUID amenityId) {
+    public ResponseEntity<ApiResponse<Void>> removeAmenity(@PathVariable UUID amenityId) {
         amenityService.removeAmenity(amenityId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success("Amenity removed", null));
     }
 
     @GetMapping
-    public ResponseEntity<List<AmenityResponse>> getAmenitiesByListing(@PathVariable UUID listingId) {
-        return ResponseEntity.ok(amenityService.getAmenitiesByListing(listingId));
+    public ResponseEntity<ApiResponse<List<AmenityResponseDto>>> getAmenitiesByListing(@PathVariable UUID listingId) {
+        return ResponseEntity.ok(ApiResponse.success("Success", amenityService.getAmenitiesByListing(listingId)));
     }
 }

@@ -1,26 +1,12 @@
 package com.nextstay.booking.service;
 
-import com.nextstay.booking.client.ListingServiceClient;
 import com.nextstay.booking.dto.ReservationRequest;
-import com.nextstay.booking.entity.Reservation;
-import com.nextstay.booking.entity.ReservationStatus;
-import com.nextstay.booking.repository.ReservationRepository;
-import com.nextstay.common.dto.BlockDatesRequest;
-import com.nextstay.common.dto.ListingResponse;
-import com.nextstay.common.dto.ReservationResponse;
-import com.nextstay.common.exception.BadRequestException;
-import com.nextstay.common.exception.ConflictException;
-import com.nextstay.common.exception.ResourceNotFoundException;
-import com.nextstay.common.exception.UnauthorizedException;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import com.nextstay.booking.dto.ReservationResponse;
 
-import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
+<<<<<<< HEAD
 @Service
 @RequiredArgsConstructor
 public class ReservationService {
@@ -158,3 +144,14 @@ public class ReservationService {
                 .build();
     }
 }
+=======
+public interface ReservationService {
+    ReservationResponse createReservation(UUID guestId, ReservationRequest request);
+    ReservationResponse approveReservation(UUID reservationId, UUID hostId);
+    ReservationResponse declineReservation(UUID reservationId, UUID hostId);
+    ReservationResponse cancelReservation(UUID reservationId, UUID guestId);
+    ReservationResponse getReservation(UUID reservationId);
+    List<ReservationResponse> getReservationsByUser(UUID userId);
+    void completePastStays();   // called by scheduler
+}
+>>>>>>> 0c0cf32da1d9b2356876779621f6aad5256bae7e
