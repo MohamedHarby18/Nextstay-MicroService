@@ -24,10 +24,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
     private static final String[] PUBLIC_PATHS = {
-            "/api/auth/**",
-            "/api/agents/register",
-            "/api/agents/login"
-    };
+                "/api/auth/**",
+                "/api/agents/register",
+                "/api/agents/login"
+        };
 
     private final JwtTokenProvider jwtTokenProvider;
     private final UserDetailsService userDetailsService;
