@@ -22,7 +22,7 @@ public class SupportController {
 
     // ─── Guest / Host: create & view own tickets ──────────────────────────────
 
-    @PostMapping
+    @PostMapping //true
     public ResponseEntity<SupportTicket> createTicket(
             @RequestHeader("X-User-Id") UUID userId,
             @RequestHeader("X-User-Role") String userRole,
@@ -30,7 +30,7 @@ public class SupportController {
         return ResponseEntity.ok(supportService.createTicket(userId, userRole, request));
     }
 
-    @GetMapping("/my")
+    @GetMapping("/my") //true
     public ResponseEntity<List<SupportTicket>> getMyTickets(
             @RequestHeader("X-User-Id") UUID userId) {
         return ResponseEntity.ok(supportService.getUserTickets(userId));
@@ -38,7 +38,7 @@ public class SupportController {
 
     // ─── Messages ─────────────────────────────────────────────────────────────
 
-    @PostMapping("/{ticketId}/messages")
+    @PostMapping("/{ticketId}/messages") //true
     public ResponseEntity<TicketMessage> replyToTicket(
             @PathVariable UUID ticketId,
             @RequestHeader("X-User-Id") UUID senderId,
@@ -48,7 +48,7 @@ public class SupportController {
                 .ok(supportService.replyToTicket(ticketId, senderId, senderRole, request.getMessageText()));
     }
 
-    @GetMapping("/{ticketId}/messages")
+    @GetMapping("/{ticketId}/messages") //not working
     public ResponseEntity<List<TicketMessage>> getTicketMessages(
             @PathVariable UUID ticketId) {
         return ResponseEntity.ok(supportService.getTicketMessages(ticketId));
@@ -56,20 +56,25 @@ public class SupportController {
 
     // ─── Assignment (Employees' Admin) ────────────────────────────────────────
 
-    @PutMapping("/{ticketId}/assign/{agentId}")
+    @PutMapping("/{ticketId}/assign/{agentId}") // True
     public ResponseEntity<SupportTicket> assignTicket(
             @PathVariable UUID ticketId,
-            @PathVariable UUID agentId) {
+            @PathVariable UUID agentId,
+            @RequestHeader("X-User-Role") String role) {
+        // AgentRole.ADMIN = "Employees' Admin" who manages support staff & ticket assignment
+        if (!"ADMIN".equalsIgnoreCase(role) && !"SUPPORT_LEAD".equalsIgnoreCase(role)) {
+            return ResponseEntity.status(403).build();
+        }
         return ResponseEntity.ok(supportService.assignTicket(ticketId, agentId));
     }
 
-    @PutMapping("/{ticketId}/unassign")
+    @PutMapping("/{ticketId}/unassign") //True
     public ResponseEntity<Void> unassignTicket(@PathVariable UUID ticketId) {
         supportService.unassignTicket(ticketId);
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/agent/{agentId}/unassign")
+    @PutMapping("/agent/{agentId}/unassign") //True
     public ResponseEntity<Void> unassignTicketsForAgent(@PathVariable UUID agentId) {
         supportService.unassignTicketsForAgent(agentId);
         return ResponseEntity.ok().build();
@@ -77,7 +82,7 @@ public class SupportController {
 
     // ─── Status Transitions (Support Agent) ───────────────────────────────────
 
-    @PutMapping("/{ticketId}/status")
+    @PutMapping("/{ticketId}/status") // true need Validation
     public ResponseEntity<SupportTicket> updateTicketStatus(
             @PathVariable UUID ticketId,
             @RequestHeader("X-User-Role") String role,
@@ -87,7 +92,7 @@ public class SupportController {
 
     // ─── Agent Dashboard — status filter only ─────────────────────────────────
 
-    @GetMapping("/dashboard")
+    @GetMapping("/dashboard") // True
     public ResponseEntity<List<SupportTicket>> getAgentDashboard(
             @RequestHeader("X-User-Role") String role,
             @RequestParam(required = false) String status) {
@@ -96,7 +101,7 @@ public class SupportController {
 
     // ─── Action-needed (SA flags → Users' Admin resolves) ────────────────────
 
-    @PutMapping("/{ticketId}/flag-action")
+    @PutMapping("/{ticketId}/flag-action") //true
     public ResponseEntity<SupportTicket> flagActionNeeded(
             @PathVariable UUID ticketId,
             @RequestHeader("X-User-Role") String role,
@@ -104,7 +109,7 @@ public class SupportController {
         return ResponseEntity.ok(supportService.flagActionNeeded(ticketId, role, actionType));
     }
 
-    @GetMapping("/action-needed")
+    @GetMapping("/action-needed") //true
     public ResponseEntity<List<SupportTicket>> getActionNeededTickets(
             @RequestHeader("X-User-Role") String role,
             @RequestParam(required = false) String actionType) {
@@ -113,13 +118,13 @@ public class SupportController {
 
     // ─── Agent Performance Stats (Employees' Admin) ───────────────────────────
 
-    @GetMapping("/agent/{agentId}/stats")
+    @GetMapping("/agent/{agentId}/stats") // True
     public ResponseEntity<Map<String, Long>> getAgentStats(
             @PathVariable UUID agentId) {
         return ResponseEntity.ok(supportService.getAgentStats(agentId));
     }
 
-    @GetMapping("/stats/overall")
+    @GetMapping("/stats/overall") // True
     public ResponseEntity<Map<String, Long>> getOverallStats() {
         return ResponseEntity.ok(supportService.getOverallStats());
     }

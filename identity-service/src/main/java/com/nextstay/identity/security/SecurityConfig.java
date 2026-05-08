@@ -54,6 +54,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/error", "/error/**").permitAll()
                 .requestMatchers("/api/auth/**", "/api/agents/login", "/api/agents/register").permitAll()
+                // Internal service-to-service endpoint — no user JWT available from Feign callers
+                .requestMatchers("/api/agents/*/exists").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
