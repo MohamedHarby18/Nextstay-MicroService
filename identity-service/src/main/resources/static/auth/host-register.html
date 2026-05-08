@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>NextStay - Become a Host</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@400,0&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        .coral { color: #FF5A5F; }
+        .bg-coral { background-color: #FF5A5F; }
+        .forest-bg { background: linear-gradient(to top, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.1) 60%, transparent 100%), url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=900&q=80') center/cover; }
+    </style>
+</head>
+<body class="bg-white min-h-screen flex">
+    <div class="hidden md:block md:w-[50%] forest-bg"></div>
+    <div class="flex-1 flex flex-col justify-center items-center p-8">
+        <div class="w-full max-w-md">
+            <span class="inline-block bg-[#FFE5E5] text-[#FF5A5F] text-xs font-bold px-3 py-1 rounded-full mb-4">HOST ACCOUNT</span>
+            <h2 class="text-3xl font-bold text-gray-900 mb-2">Become a Host</h2>
+            <form class="space-y-4 mt-6" onsubmit="handleRegister(event, 'HOST')">
+                <input type="text" placeholder="Full Name" class="w-full px-4 py-3 border border-gray-200 rounded-xl" required/>
+                <input type="email" placeholder="Email" class="w-full px-4 py-3 border border-gray-200 rounded-xl" required/>
+                <input type="tel" placeholder="Phone Number" class="w-full px-4 py-3 border border-gray-200 rounded-xl" required/>
+                <input type="password" placeholder="Password" class="w-full px-4 py-3 border border-gray-200 rounded-xl" required/>
+                <div class="bg-[#FFE5E5] rounded-xl p-4 flex gap-3 items-start text-sm text-[#FF5A5F]">
+                    <span class="material-symbols-outlined">info</span>
+                    <p>Host accounts require admin verification [cite: 166] before listing properties.</p>
+                </div>
+                <button type="submit" class="w-full py-4 bg-coral text-white rounded-xl font-bold">Create Host Account</button>
+            </form>
+            <p class="mt-6 text-center text-gray-500">Already a host? <a href="host-login.html" class="coral font-semibold hover:underline">Log In</a></p>
+        </div>
+    </div>
+    <script>
+        function handleRegister(e, role) { e.preventDefault(); alert(role + ' Registration request sent to /api/auth/register'); }
+    </script>
+</body>
+</html>

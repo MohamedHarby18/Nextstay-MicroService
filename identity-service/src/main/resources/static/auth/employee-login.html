@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>NextStay - Internal Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@400,0&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #F1F5F9; }
+        .material-symbols-outlined { font-family: 'Material Symbols Outlined'; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-center items-center p-8">
+    <div class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] bg-white shadow-lg rounded-full px-3 py-2 flex gap-1 border border-gray-100 text-xs font-semibold text-gray-600">
+        <a href="guest-login.html" class="hover:bg-[#f1f5f9] px-4 py-1.5 rounded-full transition-all">Public Site</a>
+        <a href="employee-login.html" class="bg-[#091426] text-white px-4 py-1.5 rounded-full">Employee Portal</a>
+    </div>
+
+    <div class="w-full max-w-[520px]">
+        <div class="text-center mb-10">
+            <h1 class="font-bold text-4xl text-[#091426] tracking-tighter">NextStay</h1>
+            <p class="text-xs font-semibold text-[#64748b] uppercase tracking-[0.2em]">Internal Operations Portal</p>
+        </div>
+        <div class="bg-white rounded-2xl p-10 shadow-lg border border-[#e2e8f0]">
+            <h2 class="text-3xl font-bold text-[#0f172a] mb-8">Employee Login</h2>
+            <form class="space-y-5" onsubmit="handleLogin(event, 'EMPLOYEE')">
+                <input type="email" placeholder="Corporate Email" class="w-full px-4 py-3.5 bg-[#f8fafc] border border-[#e2e8f0] rounded-lg" required/>
+                <input type="password" placeholder="Password" class="w-full px-4 py-3.5 bg-[#f8fafc] border border-[#e2e8f0] rounded-lg" required/>
+                <button type="submit" class="w-full bg-[#091426] text-white font-bold py-4 rounded-lg flex justify-center items-center gap-2">
+                    Login to Workspace <span class="material-symbols-outlined">login</span>
+                </button>
+            </form>
+        </div>
+    </div>
+    <script>
+        function handleLogin(e, role) { e.preventDefault(); alert('Employee Login request sent to /api/agents/login'); }
+    </script>
+</body>
+</html>

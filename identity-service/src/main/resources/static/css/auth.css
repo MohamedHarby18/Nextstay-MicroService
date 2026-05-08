@@ -1,0 +1,63 @@
+/* Import NextStay Brand Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --primary-coral: #FF5A5F;
+  --secondary-pink: #FFE5E5;
+  --bg-warm-white: #FAFAFA;
+  --text-dark: #222222;
+  --text-gray: #666666;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--bg-warm-white);
+  color: var(--text-dark);
+}
+
+/* Brand Colors */
+.coral { color: var(--primary-coral); }
+.bg-coral { background-color: var(--primary-coral); }
+.border-coral { border-color: var(--primary-coral); }
+
+/* Form Elements */
+.input-field {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  border: 1px solid #E5E7EB;
+  border-radius: 1rem; /* 16px rounded corners per design doc */
+  background-color: #FFFFFF;
+  transition: all 0.2s ease-in-out;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--primary-coral);
+  box-shadow: 0 0 0 3px rgba(255, 90, 95, 0.2);
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 1rem;
+  background-color: var(--primary-coral);
+  color: white;
+  border-radius: 1rem;
+  font-weight: 700;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+/* Backgrounds */
+.cabin-bg {
+  background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 60%, transparent 100%), 
+              url('https://images.unsplash.com/photo-1542718610-a1a5ac7f3c34?w=900&q=80') center/cover;
+}
