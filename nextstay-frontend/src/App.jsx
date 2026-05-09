@@ -19,7 +19,9 @@ import MyReviews from './pages/guest/MyReviews'
 import GuestTickets from './pages/guest/GuestTickets'
 import TicketConversation from './pages/guest/TicketConversation'
 
+// SHARED PAGES
 import ProfilePage from './pages/shared/ProfilePage'
+
 // Host pages
 import HostDashboard from './pages/host/HostDashboard'
 import MyListings from './pages/host/MyListings'
@@ -77,13 +79,8 @@ function RequireAgent({ children }) {
 
 function RequireUsersAdmin({ children }) {
   const { token, role, authType } = useAuthStore()
-  
-  // User Admins use the normal login, so redirect there if no token
   if (!token) return <Navigate to="/login" replace />
-  
-  // Check for 'ADMIN' role AND 'user' authType to separate them from Employee Admins
   if (role !== 'ADMIN' || authType !== 'user') return <Navigate to="/login" replace />
-  
   return children
 }
 
@@ -99,11 +96,8 @@ function PublicOnly({ children }) {
   if (token) {
     if (authType === 'agent') {
       if (['SUPPORT_AGENT', 'SUPPORT_LEAD'].includes(role)) return <Navigate to="/agent/tickets" replace />
-      // Employee Admin check
       if (['ADMIN_EMPLOYEES', 'ADMIN'].includes(role)) return <Navigate to="/emp-admin/employees" replace />
     }
-    
-    // ADD THIS BLOCK: Explicitly handle User Admins vs Hosts vs Guests
     if (authType === 'user') {
       if (role === 'ADMIN') return <Navigate to="/users-admin/listings" replace />
       if (role === 'HOST') return <Navigate to="/host" replace />
@@ -135,6 +129,7 @@ export default function App() {
         <Route path="/guest/reviews" element={<RequireGuest><MyReviews /></RequireGuest>} />
         <Route path="/guest/tickets" element={<RequireAuth><GuestTickets /></RequireAuth>} />
         <Route path="/guest/tickets/:ticketId" element={<RequireAuth><TicketConversation /></RequireAuth>} />
+        {/* UPDATED: Unified Profile Route */}
         <Route path="/guest/profile" element={<RequireGuest><ProfilePage /></RequireGuest>} />
 
         {/* ─── Host ─── */}
@@ -146,6 +141,7 @@ export default function App() {
         <Route path="/host/earnings" element={<RequireHost><HostEarnings /></RequireHost>} />
         <Route path="/host/tickets" element={<RequireHost><GuestTickets /></RequireHost>} />
         <Route path="/host/tickets/:ticketId" element={<RequireHost><TicketConversation /></RequireHost>} />
+        {/* UPDATED: Unified Profile Route */}
         <Route path="/host/profile" element={<RequireHost><ProfilePage /></RequireHost>} />
 
         {/* ─── Support Agent ─── */}
@@ -167,7 +163,6 @@ export default function App() {
         <Route path="/emp-admin/assign" element={<RequireEmpAdmin><AssignTickets /></RequireEmpAdmin>} />
         <Route path="/emp-admin/action-needed" element={<RequireEmpAdmin><EmpAdminActionNeeded /></RequireEmpAdmin>} />
 
-        {/* Catch-all */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
