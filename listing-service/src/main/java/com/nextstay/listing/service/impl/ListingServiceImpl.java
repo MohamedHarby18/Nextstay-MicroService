@@ -65,7 +65,7 @@ public class ListingServiceImpl implements ListingService {
 
         listingRepo.save(listing);
 
-        // Update amenities: delete all existing, re-add new list (simplest approach)
+        // Update amenities: delete all existing, re-add new list
         if (request.getAmenities() != null) {
             List<Amenity> existing = amenityRepo.findByListingId(listingId);
             amenityRepo.deleteAll(existing);
@@ -104,6 +104,14 @@ public class ListingServiceImpl implements ListingService {
     @Override
     public List<ListingResponseDto> getAllActiveListings() {
         return listingRepo.findByStatus(ListingStatus.ACTIVE).stream()
+                .map(l -> toResponseDto(l, amenityRepo.findByListingId(l.getId())))
+                .collect(Collectors.toList());
+    }
+
+    // NEW: Implement the method for Admin to see everything
+    @Override
+    public List<ListingResponseDto> getAllListings() {
+        return listingRepo.findAll().stream()
                 .map(l -> toResponseDto(l, amenityRepo.findByListingId(l.getId())))
                 .collect(Collectors.toList());
     }
@@ -154,15 +162,25 @@ public class ListingServiceImpl implements ListingService {
         Listing listing = listingRepo.findById(listingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found"));
 
-        if ("APPROVED".equalsIgnoreCase(action.getDecision())) {
+        // Use getDecision() since getStatus() doesn't exist in your DTO
+        String decision = action.getDecision();
+        
+        if (decision == null) {
+            throw new IllegalArgumentException("Decision cannot be null");
+        }
+
+        // Map the frontend strings to your backend Enum
+        if ("ACTIVE".equalsIgnoreCase(decision) || "APPROVED".equalsIgnoreCase(decision)) {
             listing.setStatus(ListingStatus.ACTIVE);
-        } else if ("FLAGGED".equalsIgnoreCase(action.getDecision())) {
+        } else if ("REJECTED".equalsIgnoreCase(decision)) {
+            listing.setStatus(ListingStatus.REJECTED);
+        } else if ("FLAGGED".equalsIgnoreCase(decision) || "SUSPENDED".equalsIgnoreCase(decision)) {
             listing.setStatus(ListingStatus.SUSPENDED);
         } else {
-            throw new IllegalArgumentException("Decision must be APPROVED or FLAGGED");
+            throw new IllegalArgumentException("Unknown decision: " + decision);
         }
+        
         listingRepo.save(listing);
-        // Admin audit is handled by AOP aspect
     }
 
     @Override
@@ -174,7 +192,6 @@ public class ListingServiceImpl implements ListingService {
         listingRepo.save(listing);
     }
 
-    // Helper: convert entity to response DTO
     private ListingResponseDto toResponseDto(Listing listing, List<Amenity> amenities) {
         return ListingResponseDto.builder()
                 .id(listing.getId())

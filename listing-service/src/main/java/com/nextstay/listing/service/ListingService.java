@@ -13,6 +13,7 @@ public interface ListingService {
     List<ListingResponseDto> getAllActiveListings();
     List<ListingResponseDto> getListingsByHost(UUID hostId);
     List<ListingResponseDto> searchListings(String location, Double minPrice, Double maxPrice);
+    List<ListingResponseDto> getAllListings();
     void verifyListing(UUID listingId, AdminListingActionDto action, UUID adminId);
     void updateAverageRating(UUID listingId, Double newRating); // called by Review Service
 }

@@ -48,6 +48,12 @@ public class ListingController {
         return ResponseEntity.ok(ApiResponse.success("Listing deleted", null));
     }
 
+    // New endpoint for Admin to see everything
+    @GetMapping("/admin/all")
+    public ResponseEntity<ApiResponse<List<ListingResponseDto>>> getAllListingsForAdmin() {
+        return ResponseEntity.ok(ApiResponse.success("Success", listingService.getAllListings()));
+    }
+    
     // Get single listing true
     @GetMapping("/{listingId}")
     public ResponseEntity<ApiResponse<ListingResponseDto>> getListingById(@PathVariable UUID listingId) {

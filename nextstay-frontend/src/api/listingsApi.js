@@ -1,7 +1,7 @@
 import client from './client'
 
 export const listingsApi = {
-  getAll:     () => client.get('/listings').then(r => r.data),
+  getAll: () => client.get('/listings/admin/all').then(r => r.data),
   getById:    (id) => client.get(`/listings/${id}`).then(r => r.data),
   search:     (params) => client.get('/listings/search', { params }).then(r => r.data),
   getByHost:  (hostId) => client.get(`/listings/host/${hostId}`).then(r => r.data),
