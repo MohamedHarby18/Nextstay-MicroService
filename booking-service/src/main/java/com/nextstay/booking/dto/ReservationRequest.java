@@ -1,10 +1,9 @@
 package com.nextstay.booking.dto;
 
-import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.FutureOrPresent; // Changed from Future
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -14,11 +13,11 @@ public class ReservationRequest {
     private UUID listingId;
 
     @NotNull
-    @Future(message = "Check-in date must be in the future")
+    @FutureOrPresent(message = "Check-in date cannot be in the past")
     private LocalDate checkInDate;
 
     @NotNull
-    @Future(message = "Check-out date must be in the future")
+    @FutureOrPresent(message = "Check-out date cannot be in the past")
     private LocalDate checkOutDate;
 
     @Min(1)

@@ -16,22 +16,55 @@ export default function UserManagement() {
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState(null)
 
-  const { data: users = [], isLoading } = useQuery({ queryKey: ['users', 'all'], queryFn: usersApi.getAll })
+  const { data: users = [], isLoading } = useQuery({ 
+    queryKey: ['users', 'all'], 
+    queryFn: usersApi.getAll 
+  })
 
   const filtered = users.filter(u =>
     !search || u.name?.toLowerCase().includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase())
   )
 
-  const { mutate: flag } = useMutation({ mutationFn: (id) => usersApi.flag(id), onSuccess: () => { toast.success('User flagged'); qc.invalidateQueries(['users']) } })
-  const { mutate: unflag } = useMutation({ mutationFn: (id) => usersApi.unflag(id), onSuccess: () => { toast.success('Flag removed'); qc.invalidateQueries(['users']) } })
-  const { mutate: deactivate } = useMutation({ mutationFn: (id) => usersApi.deactivate(id), onSuccess: () => { toast.success('User deactivated'); qc.invalidateQueries(['users']) } })
-  const { mutate: reactivate } = useMutation({ mutationFn: (id) => usersApi.reactivate(id), onSuccess: () => { toast.success('User reactivated'); qc.invalidateQueries(['users']) } })
+  const { mutate: flag } = useMutation({ 
+    mutationFn: (id) => usersApi.flag(id), 
+    onSuccess: () => { 
+      toast.success('User flagged'); 
+      qc.invalidateQueries(['users']) 
+    } 
+  })
+  
+  const { mutate: unflag } = useMutation({ 
+    mutationFn: (id) => usersApi.unflag(id), 
+    onSuccess: () => { 
+      toast.success('Flag removed'); 
+      qc.invalidateQueries(['users']) 
+    } 
+  })
+  
+  const { mutate: deactivate } = useMutation({ 
+    mutationFn: (id) => usersApi.deactivate(id), 
+    onSuccess: () => { 
+      toast.success('User deactivated'); 
+      qc.invalidateQueries(['users']) 
+    } 
+  })
+  
+  const { mutate: reactivate } = useMutation({ 
+    mutationFn: (id) => usersApi.reactivate(id), 
+    onSuccess: () => { 
+      toast.success('User reactivated'); 
+      qc.invalidateQueries(['users']) 
+    } 
+  })
 
   return (
     <EmployeeLayout sidebarRole="ADMIN_USERS">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <div><h1 className="page-title">User Management</h1><p className="page-subtitle">{users.length} registered users</p></div>
+          <div>
+            <h1 className="page-title">User Management</h1>
+            <p className="page-subtitle">{users.length} registered users</p>
+          </div>
         </div>
 
         <div className="flex gap-3 mb-6">
@@ -43,7 +76,16 @@ export default function UserManagement() {
             : (
               <div className="table-container">
                 <table className="table">
-                  <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+                  <thead>
+                    <tr>
+                      <th>User</th>
+                      <th>Email</th>
+                      <th>Role</th>
+                      <th>Status</th>
+                      <th>Joined</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
                   <tbody>
                     {filtered.map(u => (
                       <tr key={u.id}>
@@ -95,7 +137,7 @@ export default function UserManagement() {
               {[
                 { l: 'Role', v: selected.role },
                 { l: 'Phone', v: selected.phoneNumber || '—' },
-                { l: 'Verified', v: selected.isVerified ? 'Yes' : 'No' },
+                // REMOVED: Verified field to align with listing-level verification workflow
                 { l: 'Active', v: selected.isActive ? 'Yes' : 'No' },
                 { l: 'Flagged', v: selected.isFlagged ? 'Yes' : 'No' },
                 { l: 'Joined', v: formatDate(selected.createdAt) },
