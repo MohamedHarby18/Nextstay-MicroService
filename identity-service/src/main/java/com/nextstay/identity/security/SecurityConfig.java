@@ -33,27 +33,30 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            
-            // ADDED THE FILTER HERE
-            .addFilterBefore(jwtAuthenticationFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
-            
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/agents/register", "/api/agents/login").permitAll()
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+            http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 
-                // This covers all Admin actions under the single "ADMIN" role
-                .requestMatchers("/api/admin/**", "/api/users/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN")
+                .addFilterBefore(jwtAuthenticationFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
                 
-                .anyRequest().authenticated()
-            );
+                .authorizeHttpRequests(auth -> auth
+                    .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/api/agents/register", "/api/agents/login").permitAll()
+                    
+                    // 1. Allow any authenticated user (Guest, Host, etc.) to view or update a profile
+                    .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/users/{id}").authenticated()
+                    .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/users/{id}").authenticated()
+                    
+                    // 2. Keep sensitive moderation actions restricted to Admins
+                    .requestMatchers("/api/admin/**", "/api/users/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN")
+                    
+                    .anyRequest().authenticated()
+                );
 
-        return http.build();
-    }
+            return http.build();
+        }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
