@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { MapPin, Star, Users, Calendar, ChevronLeft, Share2, Heart, Shield, Wifi, Car, Utensils, Waves } from 'lucide-react'
+import { MapPin, Star, Users, Calendar, ChevronLeft, Share2, Shield, Wifi, Car, Utensils, Waves } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { listingsApi } from '../../api/listingsApi'
 import { reviewsApi } from '../../api/reviewsApi'
@@ -19,7 +19,6 @@ export default function PropertyDetails() {
   const [checkOut, setCheckOut] = useState('')
   const [guests, setGuests] = useState(1)
   const [imgIdx, setImgIdx] = useState(0)
-  const [wishlist, setWishlist] = useState(()=>JSON.parse(localStorage.getItem('nextstay-wishlist')||'[]'))
 
   const { data: listingRes, isLoading } = useQuery({ queryKey:['listing',id], queryFn:()=>listingsApi.getById(id) })
   const { data: reviews=[] } = useQuery({ queryKey:['reviews','listing',id], queryFn:()=>reviewsApi.getByListing(id) })
@@ -40,12 +39,10 @@ export default function PropertyDetails() {
   return (
     <GuestHostLayout role="GUEST">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        {/* Back */}
         <button onClick={()=>navigate(-1)} className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary mb-4 transition-colors">
           <ChevronLeft size={16}/> Back to results
         </button>
 
-        {/* Title row */}
         <div className="flex items-start justify-between gap-4 mb-4 flex-wrap">
           <div>
             <h1 className="text-2xl font-bold text-text-primary">{listing.title}</h1>
@@ -56,14 +53,9 @@ export default function PropertyDetails() {
           </div>
           <div className="flex items-center gap-3">
             <button className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-sm font-medium hover:bg-muted"><Share2 size={15}/>Share</button>
-            <button onClick={()=>{const u=wishlist.includes(id)?wishlist.filter(x=>x!==id):[...wishlist,id];setWishlist(u);localStorage.setItem('nextstay-wishlist',JSON.stringify(u))}}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-sm font-medium hover:bg-muted">
-              <Heart size={15} className={wishlist.includes(id)?'fill-brand-500 text-brand-500':''}/>{wishlist.includes(id)?'Saved':'Save'}
-            </button>
           </div>
         </div>
 
-        {/* Image gallery */}
         <div className="grid grid-cols-4 grid-rows-2 gap-2 h-80 sm:h-[420px] rounded-3xl overflow-hidden mb-8">
           <div className="col-span-2 row-span-2 relative cursor-pointer" onClick={()=>setImgIdx(0)}>
             <img src={images[0]} alt="" className="w-full h-full object-cover"/>
@@ -75,11 +67,8 @@ export default function PropertyDetails() {
           ))}
         </div>
 
-        {/* Two-column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left — details */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Host info */}
             <div className="flex items-center justify-between py-6 border-b border-border">
               <div>
                 <h2 className="text-xl font-bold text-text-primary">Hosted by a verified host</h2>
@@ -88,13 +77,11 @@ export default function PropertyDetails() {
               <Avatar name="Host" size={52}/>
             </div>
 
-            {/* Description */}
             <div>
               <h3 className="font-semibold text-text-primary mb-3">About this place</h3>
               <p className="text-text-secondary leading-relaxed">{listing.description}</p>
             </div>
 
-            {/* Amenities */}
             {listing.amenities?.length > 0 && (
               <div>
                 <h3 className="font-semibold text-text-primary mb-4">What this place offers</h3>
@@ -109,7 +96,6 @@ export default function PropertyDetails() {
               </div>
             )}
 
-            {/* Reviews */}
             <div>
               <div className="flex items-center gap-3 mb-6">
                 <Star size={20} className="fill-amber-400 text-amber-400"/>
@@ -135,7 +121,6 @@ export default function PropertyDetails() {
             </div>
           </div>
 
-          {/* Right — booking card */}
           <div className="lg:col-span-1">
             <div className="card p-6 sticky top-24">
               <div className="flex items-baseline gap-1 mb-6">

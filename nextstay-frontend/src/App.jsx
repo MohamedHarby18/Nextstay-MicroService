@@ -14,7 +14,6 @@ import PropertyDetails from './pages/guest/PropertyDetails'
 import BookingCheckout from './pages/guest/BookingCheckout'
 import MyReservations from './pages/guest/MyReservations'
 import ReservationDetails from './pages/guest/ReservationDetails'
-import Wishlist from './pages/guest/Wishlist'
 import SubmitReview from './pages/guest/SubmitReview'
 import MyReviews from './pages/guest/MyReviews'
 import GuestTickets from './pages/guest/GuestTickets'
@@ -132,7 +131,6 @@ export default function App() {
         <Route path="/guest/checkout/:listingId" element={<RequireGuest><BookingCheckout /></RequireGuest>} />
         <Route path="/guest/reservations" element={<RequireGuest><MyReservations /></RequireGuest>} />
         <Route path="/guest/reservations/:id" element={<RequireGuest><ReservationDetails /></RequireGuest>} />
-        <Route path="/guest/wishlist" element={<RequireGuest><Wishlist /></RequireGuest>} />
         <Route path="/guest/review/:reservationId" element={<RequireGuest><SubmitReview /></RequireGuest>} />
         <Route path="/guest/reviews" element={<RequireGuest><MyReviews /></RequireGuest>} />
         <Route path="/guest/tickets" element={<RequireAuth><GuestTickets /></RequireAuth>} />

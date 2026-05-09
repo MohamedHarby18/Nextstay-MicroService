@@ -7,7 +7,6 @@ import Avatar from '../ui/Avatar'
 const GUEST_NAV = [
   { label: 'Explore',      to: '/guest' },
   { label: 'Reservations', to: '/guest/reservations' },
-  { label: 'Wishlist',     to: '/guest/wishlist' },
   { label: 'Reviews',      to: '/guest/reviews' },
   { label: 'Support',      to: '/guest/tickets' },
 ]

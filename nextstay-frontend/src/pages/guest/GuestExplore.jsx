@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, MapPin, Calendar, Users, Star, Heart, ArrowRight } from 'lucide-react'
+import { Search, MapPin, Calendar, Users, Star, ArrowRight } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { listingsApi } from '../../api/listingsApi'
 import { reservationsApi } from '../../api/reservationsApi'
@@ -16,7 +16,6 @@ export default function GuestExplore() {
   const { user } = useAuthStore()
   const [search, setSearch] = useState({ location:'', checkIn:'', checkOut:'', guests:1 })
   const [category, setCategory] = useState('All')
-  const [wishlist, setWishlist] = useState(() => JSON.parse(localStorage.getItem('nextstay-wishlist')||'[]'))
 
   const { data: listingsRes, isLoading } = useQuery({
     queryKey: ['listings', 'all'],
@@ -27,16 +26,8 @@ export default function GuestExplore() {
     queryFn: reservationsApi.getMy,
   })
 
-  // Only show ACTIVE (approved) listings to the guests!
   const listings = (listingsRes?.data || []).filter(l => l.status === 'ACTIVE')
   const recent = reservations?.slice(0,3) || []
-
-  const toggleWishlist = (id, e) => {
-    e.stopPropagation()
-    const updated = wishlist.includes(id) ? wishlist.filter(x=>x!==id) : [...wishlist, id]
-    setWishlist(updated)
-    localStorage.setItem('nextstay-wishlist', JSON.stringify(updated))
-  }
 
   const handleSearch = (e) => {
     e.preventDefault()
@@ -45,7 +36,6 @@ export default function GuestExplore() {
 
   return (
     <GuestHostLayout role="GUEST">
-      {/* ── Hero search bar ── */}
       <div className="bg-gradient-to-b from-rose-50 to-white border-b border-border">
         <div className="max-w-5xl mx-auto px-4 py-10">
           <h1 className="text-3xl font-bold text-text-primary mb-2 text-center">
@@ -53,7 +43,6 @@ export default function GuestExplore() {
           </h1>
           <p className="text-text-secondary text-center mb-8">Discover unique homes, apartments and villas around the world</p>
 
-          {/* Search panel */}
           <form onSubmit={handleSearch}
             className="bg-white rounded-2xl shadow-card border border-border p-2 flex flex-col sm:flex-row gap-2">
             <div className="flex items-center gap-3 flex-1 px-4 py-3 border-b sm:border-b-0 sm:border-r border-border">
@@ -98,7 +87,6 @@ export default function GuestExplore() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* Category pills */}
         <div className="flex gap-3 overflow-x-auto pb-2 mb-8 scrollbar-hide">
           {CATEGORIES.map(c => (
             <button key={c} onClick={()=>setCategory(c)}
@@ -108,7 +96,6 @@ export default function GuestExplore() {
           ))}
         </div>
 
-        {/* My recent reservations strip */}
         {recent.length > 0 && (
           <div className="mb-10">
             <div className="flex items-center justify-between mb-4">
@@ -130,7 +117,6 @@ export default function GuestExplore() {
           </div>
         )}
 
-        {/* Listings grid */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-text-primary">
             {isLoading ? 'Loading...' : `${listings.length} places to stay`}
@@ -152,10 +138,6 @@ export default function GuestExplore() {
                 <div className="relative overflow-hidden rounded-t-2xl">
                   <img src={propertyImage(listing.id || idx, 600, 400)} alt={listing.title}
                     className="property-card-img" />
-                  <button onClick={(e)=>toggleWishlist(listing.id, e)}
-                    className="absolute top-3 right-3 p-2 rounded-full bg-white/90 hover:bg-white transition-all shadow-sm">
-                    <Heart size={16} className={wishlist.includes(listing.id)?'fill-brand-500 text-brand-500':'text-gray-600'} />
-                  </button>
                   <div className="absolute bottom-3 left-3 bg-white/95 text-xs font-bold px-2 py-1 rounded-full text-text-primary">
                     {listing.status}
                   </div>

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { MapPin, Star, Heart, SlidersHorizontal, X } from 'lucide-react'
+import { MapPin, Star, SlidersHorizontal, X } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { listingsApi } from '../../api/listingsApi'
 import GuestHostLayout from '../../components/layout/GuestHostLayout'
@@ -12,7 +12,6 @@ export default function PropertySearch() {
   const [params] = useSearchParams()
   const [filters, setFilters] = useState({ minPrice:'', maxPrice:'', location: params.get('location')||'' })
   const [showFilters, setShowFilters] = useState(false)
-  const [wishlist, setWishlist] = useState(()=>JSON.parse(localStorage.getItem('nextstay-wishlist')||'[]'))
   const [sortBy, setSortBy] = useState('default')
 
   const { data: res, isLoading, refetch } = useQuery({
@@ -28,12 +27,9 @@ export default function PropertySearch() {
     return 0
   })
 
-  const toggleWishlist = (id,e) => { e.stopPropagation(); const u=wishlist.includes(id)?wishlist.filter(x=>x!==id):[...wishlist,id]; setWishlist(u); localStorage.setItem('nextstay-wishlist',JSON.stringify(u)) }
-
   return (
     <GuestHostLayout role="GUEST">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        {/* Header */}
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
             <h1 className="text-2xl font-bold text-text-primary">{filters.location ? `Stays in ${filters.location}` : 'All available stays'}</h1>
@@ -53,7 +49,6 @@ export default function PropertySearch() {
           </div>
         </div>
 
-        {/* Filter panel */}
         {showFilters && (
           <div className="card p-5 mb-6 animate-fade-in">
             <div className="flex items-center justify-between mb-4">
@@ -72,7 +67,6 @@ export default function PropertySearch() {
           </div>
         )}
 
-        {/* Grid */}
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {Array.from({length:8}).map((_,i)=><SkeletonCard key={i}/>)}
@@ -89,9 +83,6 @@ export default function PropertySearch() {
               <div key={l.id} className="property-card" onClick={()=>navigate(`/guest/property/${l.id}`)}>
                 <div className="relative overflow-hidden rounded-t-2xl">
                   <img src={propertyImage(l.id||idx,600,400)} alt={l.title} className="property-card-img"/>
-                  <button onClick={(e)=>toggleWishlist(l.id,e)} className="absolute top-3 right-3 p-2 rounded-full bg-white/90 hover:bg-white shadow-sm">
-                    <Heart size={16} className={wishlist.includes(l.id)?'fill-brand-500 text-brand-500':'text-gray-600'}/>
-                  </button>
                 </div>
                 <div className="p-4">
                   <div className="flex justify-between gap-2 mb-1">
