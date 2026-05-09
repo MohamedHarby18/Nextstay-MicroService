@@ -7,6 +7,7 @@ import com.nextstay.common.exception.UnauthorizedException;
 import com.nextstay.review.client.BookingServiceClient;
 import com.nextstay.review.client.ListingServiceClient;
 import com.nextstay.review.dto.CreateReviewRequest;
+import com.nextstay.review.dto.ReservationResponse;
 import com.nextstay.review.entity.Review;
 import com.nextstay.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,19 @@ public class ReviewService {
     // ─── Submit review (Guest only) ───────────────────────────────────────────
 
     public Review submitReview(UUID guestId, CreateReviewRequest request) {
+        if (request.getReservationId() == null || request.getRating() == null) {
+            throw new BadRequestException("reservationId and rating are required.");
+        }
+
+        UUID resolvedListingId = request.getListingId();
+        if (resolvedListingId == null) {
+            ReservationResponse reservation = bookingServiceClient.getReservation(request.getReservationId());
+            if (reservation == null || reservation.getListingId() == null) {
+                throw new BadRequestException("Could not resolve listingId from reservation.");
+            }
+            resolvedListingId = reservation.getListingId();
+        }
+
         // Prevent duplicate review for same reservation
         if (reviewRepository.existsByReservationId(request.getReservationId())) {
             throw new ConflictException("You have already reviewed this reservation.");
@@ -51,13 +65,13 @@ public class ReviewService {
         Review review = Review.builder()
                 .reservationId(request.getReservationId())
                 .guestId(guestId)
-                .listingId(request.getListingId())
+                .listingId(resolvedListingId)
                 .rating(request.getRating())
                 .comment(request.getComment())
                 .build();
 
         review = reviewRepository.save(review);
-        recalculateListingRating(request.getListingId());
+        recalculateListingRating(resolvedListingId);
 
         return review;
     }

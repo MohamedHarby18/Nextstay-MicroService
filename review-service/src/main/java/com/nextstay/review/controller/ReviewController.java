@@ -6,6 +6,7 @@ import com.nextstay.review.dto.HostResponseResponse;
 import com.nextstay.review.entity.Review;
 import com.nextstay.review.service.HostResponseService;
 import com.nextstay.review.service.ReviewService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,7 @@ public class ReviewController {
     @PostMapping
     public ResponseEntity<Review> submitReview(
             @RequestHeader("X-User-Id") UUID guestId,
-            @RequestBody CreateReviewRequest request) {
+            @Valid @RequestBody CreateReviewRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(reviewService.submitReview(guestId, request));
     }
 
