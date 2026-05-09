@@ -67,8 +67,8 @@ public class SupportService {
                 .build();
 
         // FR-17: first agent reply → in_progress
-        if (role == TicketMessage.SenderRole.support_agent
-                && ticket.getStatus() == SupportTicket.TicketStatus.open) {
+        boolean isSupport = role == TicketMessage.SenderRole.support_agent || role == TicketMessage.SenderRole.support_lead;
+        if (isSupport && ticket.getStatus() == SupportTicket.TicketStatus.open) {
             ticket.setStatus(SupportTicket.TicketStatus.in_progress);
             ticket.setUpdatedAt(LocalDateTime.now());
             ticketRepository.save(ticket);

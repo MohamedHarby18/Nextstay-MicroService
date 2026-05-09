@@ -37,6 +37,6 @@ public class TicketMessage {
     private LocalDateTime sentAt = LocalDateTime.now();
 
     public enum SenderRole {
-        guest, host, support_agent
+        guest, host, support_agent, support_lead
     }
 }

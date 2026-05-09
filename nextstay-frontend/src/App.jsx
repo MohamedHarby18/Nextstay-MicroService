@@ -73,7 +73,7 @@ function RequireHost({ children }) {
 function RequireAgent({ children }) {
   const { token, role } = useAuthStore()
   if (!token) return <Navigate to="/employee-login" replace />
-  if (!['SUPPORT_AGENT', 'SUPPORT_LEAD'].includes(role)) return <Navigate to="/employee-login" replace />
+  if (!['SUPPORT_AGENT', 'SUPPORT_LEAD', 'ADMIN', 'ADMIN_EMPLOYEES'].includes(role)) return <Navigate to="/employee-login" replace />
   return children
 }
 
