@@ -74,6 +74,22 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.getReservation(id));
     }
 
+    // Internal: verify reservation is completed
+    @GetMapping("/{reservationId}/verify-completed")
+    public ResponseEntity<Boolean> verifyReservationCompleted(@PathVariable UUID reservationId) {
+        ReservationResponse reservation = reservationService.getReservation(reservationId);
+        return ResponseEntity.ok("COMPLETED".equalsIgnoreCase(reservation.getStatus()));
+    }
+
+    // Internal: verify reservation belongs to given guest
+    @GetMapping("/{reservationId}/guest/{guestId}/verify")
+    public ResponseEntity<Boolean> verifyReservationOwnership(
+            @PathVariable UUID reservationId,
+            @PathVariable UUID guestId) {
+        ReservationResponse reservation = reservationService.getReservation(reservationId);
+        return ResponseEntity.ok(guestId.equals(reservation.getGuestId()));
+    }
+
     // Get my reservations (current user) True
     @GetMapping("/my")
     public ResponseEntity<List<ReservationResponse>> getMyReservations(

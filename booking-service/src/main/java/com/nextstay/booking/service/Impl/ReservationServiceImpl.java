@@ -38,15 +38,12 @@ public class ReservationServiceImpl implements ReservationService {
         }
 
         // Double-booking prevention #FR-10
-        List<Reservation> allReservations = reservationRepo.findAll();
-        boolean conflict = allReservations.stream()
-            .filter(r -> r.getListingId().equals(request.getListingId()))
-            .filter(r -> r.getStatus() != ReservationStatus.CANCELLED
-                      && r.getStatus() != ReservationStatus.REJECTED)
-            .anyMatch(r ->
-                !(request.getCheckOutDate().isBefore(r.getCheckInDate()) ||
-                  request.getCheckInDate().isAfter(r.getCheckOutDate()))
-            );
+        boolean conflict = !reservationRepo.findOverlapping(
+                request.getListingId(),
+                List.of(ReservationStatus.PENDING, ReservationStatus.CONFIRMED, ReservationStatus.COMPLETED),
+                request.getCheckOutDate(),
+                request.getCheckInDate()
+        ).isEmpty();
         if (conflict) {
             throw new IllegalStateException("Selected dates are not available (double-booking prevented)");
         }
@@ -139,9 +136,7 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public List<ReservationResponse> getReservationsByUser(UUID userId) {
-        return reservationRepo.findAll().stream()
-                .filter(r -> r.getGuestId().equals(userId) || r.getGuestId().equals(userId))  // fix later: we need to know the role to decide whose reservations to show? For simplicity, filter by guestId only.
-                .filter(r -> r.getGuestId().equals(userId))
+        return reservationRepo.findByGuestId(userId).stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
