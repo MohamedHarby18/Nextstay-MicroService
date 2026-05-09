@@ -36,7 +36,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/agents/register", "/api/agents/login").permitAll()
                 
                 // This covers all Admin actions under the single "ADMIN" role
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/admin/**", "/api/users/**").hasAuthority("ADMIN")
                 
                 .anyRequest().authenticated()
             );
