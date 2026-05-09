@@ -41,6 +41,7 @@ import AgentPerformance from './pages/agent/AgentPerformance'
 import UserManagement from './pages/usersAdmin/UserManagement'
 import AdminReviews from './pages/usersAdmin/AdminReviews'
 import AdminRefunds from './pages/usersAdmin/AdminRefunds'
+import AdminListings from './pages/usersAdmin/AdminListings'
 
 // Employees Admin pages
 import EmployeesManagement from './pages/empAdmin/EmployeesManagement'
@@ -151,6 +152,7 @@ export default function App() {
         <Route path="/users-admin/users" element={<RequireUsersAdmin><UserManagement /></RequireUsersAdmin>} />
         <Route path="/users-admin/reviews" element={<RequireUsersAdmin><AdminReviews /></RequireUsersAdmin>} />
         <Route path="/users-admin/refunds" element={<RequireUsersAdmin><AdminRefunds /></RequireUsersAdmin>} />
+        <Route path="/users-admin/listings" element={<RequireUsersAdmin><AdminListings /></RequireUsersAdmin>} />
 
         {/* ─── Employees Admin ─── */}
         <Route path="/emp-admin/employees" element={<RequireEmpAdmin><EmployeesManagement /></RequireEmpAdmin>} />

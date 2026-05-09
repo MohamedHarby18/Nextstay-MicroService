@@ -31,6 +31,8 @@ public class Agent {
 
     @Column(nullable = false)
     private String passwordHash;
+    private String phoneNumber;
+    private String bio;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

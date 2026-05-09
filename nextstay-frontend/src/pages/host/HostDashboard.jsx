@@ -16,18 +16,45 @@ export default function HostDashboard() {
   const { userId } = useAuthStore()
   const navigate = useNavigate()
 
-  const { data: listingsRes, isLoading: lLoad } = useQuery({ queryKey:['listings','host',userId], queryFn:()=>listingsApi.getByHost(userId), enabled:!!userId })
-  const { data: reservations=[], isLoading: rLoad } = useQuery({ queryKey:['reservations','my'], queryFn:reservationsApi.getMy })
+  const { data: listingsRes, isLoading: lLoad } = useQuery({ 
+      queryKey:['listings','host',userId], 
+      queryFn:()=>listingsApi.getByHost(userId), 
+      enabled:!!userId 
+  })
+  const { data: reservations=[], isLoading: rLoad } = useQuery({ 
+      queryKey:['reservations','my'], 
+      queryFn:reservationsApi.getMy 
+  })
 
   const listings = listingsRes?.data || []
   const pending = reservations.filter(r=>r.status==='PENDING')
   const confirmed = reservations.filter(r=>r.status==='CONFIRMED')
   const completed = reservations.filter(r=>r.status==='COMPLETED')
-  const totalEarnings = completed.length * 200 // approximate
-
+  
+  // --- REAL DATA CALCULATION ---
+  const totalEarnings = completed.reduce((sum, r) => sum + (r.totalPrice || 0), 0);
   const avgRating = listings.length ? (listings.reduce((s,l)=>s+(l.averageRating||0),0)/listings.length).toFixed(1) : '—'
 
-  const chartData = ['Jan','Feb','Mar','Apr','May','Jun'].map((m,i)=>({ month:m, bookings: Math.floor(Math.random()*10+2), earnings: Math.floor(Math.random()*2000+500) }))
+  // Initialize a flat, zeroed-out chart
+  const chartData = ['Jan','Feb','Mar','Apr','May','Jun'].map(m => ({ 
+      month: m, 
+      bookings: 0, 
+      earnings: 0 
+  }));
+
+  // Automatically populate the chart when real bookings happen!
+  completed.forEach(r => {
+      const date = new Date(r.checkInDate);
+      if(!isNaN(date)) {
+          const monthStr = date.toLocaleString('en-US', { month: 'short' });
+          const chartItem = chartData.find(d => d.month === monthStr);
+          if(chartItem) {
+              chartItem.bookings += 1;
+              chartItem.earnings += (r.totalPrice || 0);
+          }
+      }
+  });
+  // -----------------------------
 
   return (
     <GuestHostLayout role="HOST">
@@ -68,15 +95,19 @@ export default function HostDashboard() {
               <h2 className="font-bold text-text-primary">My Listings</h2>
               <button onClick={()=>navigate('/host/listings')} className="text-sm text-host-accent font-semibold hover:underline">View all</button>
             </div>
-            {listings.slice(0,3).map((l,i)=>(
-              <div key={l.id} className="flex items-center gap-3 py-3 border-b border-border last:border-0">
-                <img src={propertyImage(l.id||i,200,200)} alt="" className="w-12 h-12 rounded-xl object-cover shrink-0"/>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate">{l.title}</p>
-                  <ListingBadge status={l.status}/>
+            {listings.length === 0 ? (
+              <p className="text-sm text-text-secondary py-4 text-center">No listings yet.</p>
+            ) : (
+              listings.slice(0,3).map((l,i)=>(
+                <div key={l.id} className="flex items-center gap-3 py-3 border-b border-border last:border-0">
+                  <img src={propertyImage(l.id||i,200,200)} alt="" className="w-12 h-12 rounded-xl object-cover shrink-0"/>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate">{l.title}</p>
+                    <ListingBadge status={l.status}/>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
             <button onClick={()=>navigate('/host/listings/create')} className="btn-primary w-full btn-sm mt-4">+ Add listing</button>
           </div>
         </div>

@@ -23,11 +23,25 @@ export default function HostEarnings() {
     return sum + Math.max(0, nights)
   }, 0)
 
-  // Simulated monthly data
+  // --- REAL DATA CALCULATION ---
+  // Initialize a flat, zeroed-out chart
   const monthlyData = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'].map(m => ({
     month: m,
-    earnings: Math.floor(Math.random() * 3000 + 500),
+    earnings: 0,
   }))
+
+  // Automatically populate the chart when real bookings happen!
+  completed.forEach(r => {
+    const date = new Date(r.checkInDate);
+    if (!isNaN(date)) {
+      const monthStr = date.toLocaleString('en-US', { month: 'short' });
+      const chartItem = monthlyData.find(d => d.month === monthStr);
+      if (chartItem) {
+        chartItem.earnings += (r.totalPrice || 0);
+      }
+    }
+  });
+  // -----------------------------
 
   const statusData = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'REJECTED'].map(s => ({
     name: s.charAt(0) + s.slice(1).toLowerCase(),

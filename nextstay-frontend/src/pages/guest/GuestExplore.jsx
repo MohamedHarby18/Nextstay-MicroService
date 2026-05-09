@@ -27,7 +27,8 @@ export default function GuestExplore() {
     queryFn: reservationsApi.getMy,
   })
 
-  const listings = listingsRes?.data || []
+  // Only show ACTIVE (approved) listings to the guests!
+  const listings = (listingsRes?.data || []).filter(l => l.status === 'ACTIVE')
   const recent = reservations?.slice(0,3) || []
 
   const toggleWishlist = (id, e) => {
