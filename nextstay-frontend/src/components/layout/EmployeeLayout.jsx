@@ -25,6 +25,7 @@ const SIDEBARS = {
     accent: '#52B788',
     links: [
       { label: 'Ticket Queue',    to: '/agent/tickets',         icon: '🎫' },
+      { label: 'Assign Tickets',  to: '/emp-admin/assign',      icon: '📋' },
       { label: 'Action Needed',   to: '/agent/action-needed',   icon: '⚡' },
       { label: 'Flagged Reviews', to: '/agent/flagged-reviews', icon: '🚩' },
       { label: 'Resolution Log',  to: '/agent/history',         icon: '✅' },

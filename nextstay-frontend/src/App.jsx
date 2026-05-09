@@ -90,7 +90,7 @@ function RequireUsersAdmin({ children }) {
 function RequireEmpAdmin({ children }) {
   const { token, role } = useAuthStore()
   if (!token) return <Navigate to="/employee-login" replace />
-  if (!['ADMIN_EMPLOYEES', 'ADMIN'].includes(role)) return <Navigate to="/employee-login" replace />
+  if (!['ADMIN_EMPLOYEES', 'ADMIN', 'SUPPORT_LEAD'].includes(role)) return <Navigate to="/employee-login" replace />
   return children
 }
 

@@ -1,6 +1,7 @@
 package com.nextstay.identity.service;
 
 import com.nextstay.identity.dto.AgentResponse;
+import com.nextstay.common.exception.BadRequestException;
 import com.nextstay.common.exception.ConflictException;
 import com.nextstay.common.exception.ResourceNotFoundException;
 import com.nextstay.common.exception.UnauthorizedException;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -41,7 +43,7 @@ public class AgentService {
                 .name(request.getName())
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
-                .role(request.getRole() != null ? AgentRole.valueOf(request.getRole().toUpperCase()) : AgentRole.SUPPORT_AGENT)
+                .role(resolveRole(request.getRole()))
                 .isActive(true)
                 .build();
 
@@ -133,5 +135,25 @@ public class AgentService {
                 .isActive(agent.getIsActive())
                 .createdAt(agent.getCreatedAt())
                 .build();
+    }
+
+    private AgentRole resolveRole(String roleInput) {
+        if (roleInput == null || roleInput.isBlank()) {
+            return AgentRole.SUPPORT_AGENT;
+        }
+
+        String normalized = roleInput
+                .trim()
+                .toUpperCase(Locale.ROOT)
+                .replace("-", "_")
+                .replace(" ", "_");
+
+        return switch (normalized) {
+            case "ADMIN", "ADMAIN" -> AgentRole.ADMIN;
+            case "SUPPORT", "SUPPORT_AGENT" -> AgentRole.SUPPORT_AGENT;
+            case "SUPPORT_LEAD" -> AgentRole.SUPPORT_LEAD;
+            default -> throw new BadRequestException(
+                    "Invalid agent role. Allowed: ADMIN, SUPPORT_AGENT, SUPPORT_LEAD");
+        };
     }
 }

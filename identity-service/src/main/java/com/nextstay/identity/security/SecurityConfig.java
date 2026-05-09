@@ -44,6 +44,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                     .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/api/agents/register", "/api/agents/login").permitAll()
+                    .requestMatchers("/api/agents/*/exists").permitAll()
                     
                     // 1. Allow any authenticated user (Guest, Host, etc.) to view or update a profile
                     .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/users/{id}").authenticated()

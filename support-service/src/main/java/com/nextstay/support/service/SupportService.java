@@ -9,6 +9,7 @@ import com.nextstay.support.entity.SupportTicket;
 import com.nextstay.support.entity.TicketMessage;
 import com.nextstay.support.repository.SupportTicketRepository;
 import com.nextstay.support.repository.TicketMessageRepository;
+import feign.FeignException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -85,7 +86,12 @@ public class SupportService {
     // ─── Assignment (Employees' Admin) ────────────────────────────────────────
 
     public SupportTicket assignTicket(UUID ticketId, UUID agentId) {
-        Boolean agentExists = identityServiceClient.agentExists(agentId);
+        Boolean agentExists;
+        try {
+            agentExists = identityServiceClient.agentExists(agentId);
+        } catch (FeignException ex) {
+            throw new BadRequestException("Unable to validate agent. Check agent ID or identity service availability.");
+        }
         if (!Boolean.TRUE.equals(agentExists)) {
             throw new BadRequestException("Agent does not exist");
         }

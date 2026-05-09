@@ -62,7 +62,13 @@ public class SupportController {
             @PathVariable UUID agentId,
             @RequestHeader("X-User-Role") String role) {
         // AgentRole.ADMIN = "Employees' Admin" who manages support staff & ticket assignment
-        if (!"ADMIN".equalsIgnoreCase(role) && !"SUPPORT_LEAD".equalsIgnoreCase(role)) {
+        String normalizedRole = role == null ? "" : role.trim().toUpperCase().replace(" ", "_");
+        boolean canAssign = "ADMIN".equals(normalizedRole)
+                || "ADMAIN".equals(normalizedRole)
+                || "SUPPORT_LEAD".equals(normalizedRole)
+                || "EMPLOYEES_ADMIN".equals(normalizedRole)
+                || "ADMIN_EMPLOYEES".equals(normalizedRole);
+        if (!canAssign) {
             return ResponseEntity.status(403).build();
         }
         return ResponseEntity.ok(supportService.assignTicket(ticketId, agentId));
