@@ -31,12 +31,11 @@ public class ListingServiceImpl implements ListingService {
                 .location(request.getLocation())
                 .pricePerNight(BigDecimal.valueOf(request.getPricePerNight()))
                 .maxGuests(request.getMaxGuests())
-                .status(ListingStatus.INACTIVE)   // pending review
+                .status(ListingStatus.INACTIVE)
                 .averageRating(0.0)
                 .build();
         listing = listingRepo.save(listing);
 
-        // Save amenities (if any)
         if (request.getAmenities() != null) {
             for (String name : request.getAmenities()) {
                 Amenity amenity = Amenity.builder()
@@ -65,7 +64,6 @@ public class ListingServiceImpl implements ListingService {
 
         listingRepo.save(listing);
 
-        // Update amenities: delete all existing, re-add new list
         if (request.getAmenities() != null) {
             List<Amenity> existing = amenityRepo.findByListingId(listingId);
             amenityRepo.deleteAll(existing);
@@ -88,7 +86,7 @@ public class ListingServiceImpl implements ListingService {
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found"));
         if (!listing.getHostId().equals(hostId))
             throw new ForbiddenException("Only the host can delete the listing");
-        // delete amenities first
+        
         List<Amenity> amenities = amenityRepo.findByListingId(listingId);
         amenityRepo.deleteAll(amenities);
         listingRepo.delete(listing);
@@ -108,7 +106,6 @@ public class ListingServiceImpl implements ListingService {
                 .collect(Collectors.toList());
     }
 
-    // NEW: Implement the method for Admin to see everything
     @Override
     public List<ListingResponseDto> getAllListings() {
         return listingRepo.findAll().stream()
@@ -162,14 +159,14 @@ public class ListingServiceImpl implements ListingService {
         Listing listing = listingRepo.findById(listingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found"));
 
-        // Use getDecision() since getStatus() doesn't exist in your DTO
+        // FIXED: Extracting 'decision' field as per AdminListingActionDto
         String decision = action.getDecision();
         
         if (decision == null) {
             throw new IllegalArgumentException("Decision cannot be null");
         }
 
-        // Map the frontend strings to your backend Enum
+        // Map strings to ListingStatus enum
         if ("ACTIVE".equalsIgnoreCase(decision) || "APPROVED".equalsIgnoreCase(decision)) {
             listing.setStatus(ListingStatus.ACTIVE);
         } else if ("REJECTED".equalsIgnoreCase(decision)) {

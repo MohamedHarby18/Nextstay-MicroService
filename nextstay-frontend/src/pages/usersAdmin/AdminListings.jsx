@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom' // Added for navigation
 import { CheckCircle, XCircle, Home, Eye } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { listingsApi } from '../../api/listingsApi'
@@ -9,16 +10,17 @@ import Tabs from '../../components/ui/Tabs'
 import toast from 'react-hot-toast'
 import { propertyImage, formatCurrency } from '../../utils/formatters'
 
-// Fixed mapping to perfectly match the backend enum
 const STATUSES = ['INACTIVE', 'ACTIVE', 'REJECTED']
 
 export default function AdminListings() {
+  const navigate = useNavigate() // Initialize navigation hook
   const qc = useQueryClient()
-  
-  // Set default tab to the new INACTIVE string
   const [tab, setTab] = useState('INACTIVE')
 
-  const { data: res, isLoading } = useQuery({ queryKey: ['admin', 'listings'], queryFn: listingsApi.getAll })
+  const { data: res, isLoading } = useQuery({ 
+    queryKey: ['admin', 'listings'], 
+    queryFn: listingsApi.getAll 
+  })
   const allListings = res?.data || []
   const filtered = allListings.filter(l => l.status === tab)
 
@@ -29,8 +31,12 @@ export default function AdminListings() {
   }))
 
   const { mutate: verifyListing } = useMutation({
-    mutationFn: ({ id, status }) => listingsApi.verify(id, { status }),
-    onSuccess: () => { toast.success('Listing status updated!'); qc.invalidateQueries(['admin', 'listings']) },
+    // FIXED: Mapping 'status' to 'decision' to match AdminListingActionDto
+    mutationFn: ({ id, status }) => listingsApi.verify(id, { decision: status }),
+    onSuccess: () => { 
+      toast.success('Listing status updated!')
+      qc.invalidateQueries(['admin', 'listings']) 
+    },
     onError: () => toast.error('Failed to update listing status')
   })
 
@@ -64,7 +70,6 @@ export default function AdminListings() {
                     <p className="text-sm text-text-secondary mb-4 line-clamp-2">{l.description}</p>
 
                     <div className="mt-auto pt-4 border-t border-border flex gap-2">
-                      {/* Fixed condition to match the new INACTIVE string */}
                       {tab === 'INACTIVE' ? (
                         <>
                           <button onClick={() => verifyListing({ id: l.id, status: 'ACTIVE' })} className="flex-1 flex items-center justify-center gap-2 bg-emerald-500 text-white py-2 rounded-xl text-sm font-semibold hover:bg-emerald-600 transition-colors">
@@ -75,7 +80,11 @@ export default function AdminListings() {
                           </button>
                         </>
                       ) : (
-                        <button className="w-full flex items-center justify-center gap-2 bg-gray-100 text-text-secondary py-2 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors">
+                        <button 
+                          // Redirects to the guest property details view
+                          onClick={() => navigate(`/guest/property/${l.id}`)} 
+                          className="w-full flex items-center justify-center gap-2 bg-gray-100 text-text-secondary py-2 rounded-xl text-sm font-semibold hover:bg-gray-200 transition-colors"
+                        >
                           <Eye size={16} /> View Details
                         </button>
                       )}
