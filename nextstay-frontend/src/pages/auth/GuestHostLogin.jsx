@@ -25,7 +25,9 @@ export default function GuestHostLogin() {
         setUser(profile)
       } catch {}
       toast.success('Welcome back!')
-      if (res.role === 'HOST') navigate('/host')
+      // ADD THE ADMIN CHECK HERE
+      if (res.role === 'ADMIN') navigate('/users-admin/listings') 
+      else if (res.role === 'HOST') navigate('/host')
       else navigate('/guest')
     } catch (err) {
       console.error('Login error:', err)

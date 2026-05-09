@@ -9,11 +9,14 @@ import Tabs from '../../components/ui/Tabs'
 import toast from 'react-hot-toast'
 import { propertyImage, formatCurrency } from '../../utils/formatters'
 
-const STATUSES = ['PENDING', 'ACTIVE', 'REJECTED']
+// Fixed mapping to perfectly match the backend enum
+const STATUSES = ['INACTIVE', 'ACTIVE', 'REJECTED']
 
 export default function AdminListings() {
   const qc = useQueryClient()
-  const [tab, setTab] = useState('PENDING')
+  
+  // Set default tab to the new INACTIVE string
+  const [tab, setTab] = useState('INACTIVE')
 
   const { data: res, isLoading } = useQuery({ queryKey: ['admin', 'listings'], queryFn: listingsApi.getAll })
   const allListings = res?.data || []
@@ -40,7 +43,7 @@ export default function AdminListings() {
         </div>
 
         <div className="overflow-x-auto mb-6">
-          <Tabs tabs={tabs} defaultTab="PENDING" onChange={setTab} />
+          <Tabs tabs={tabs} defaultTab="INACTIVE" onChange={setTab} />
         </div>
 
         {isLoading ? <p className="py-12 text-center text-text-secondary">Loading…</p>
@@ -61,7 +64,8 @@ export default function AdminListings() {
                     <p className="text-sm text-text-secondary mb-4 line-clamp-2">{l.description}</p>
 
                     <div className="mt-auto pt-4 border-t border-border flex gap-2">
-                      {tab === 'PENDING' ? (
+                      {/* Fixed condition to match the new INACTIVE string */}
+                      {tab === 'INACTIVE' ? (
                         <>
                           <button onClick={() => verifyListing({ id: l.id, status: 'ACTIVE' })} className="flex-1 flex items-center justify-center gap-2 bg-emerald-500 text-white py-2 rounded-xl text-sm font-semibold hover:bg-emerald-600 transition-colors">
                             <CheckCircle size={16} /> Approve

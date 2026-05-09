@@ -77,9 +77,14 @@ function RequireAgent({ children }) {
 }
 
 function RequireUsersAdmin({ children }) {
-  const { token, role } = useAuthStore()
-  if (!token) return <Navigate to="/employee-login" replace />
-  if (role !== 'ADMIN_USERS') return <Navigate to="/employee-login" replace />
+  const { token, role, authType } = useAuthStore()
+  
+  // User Admins use the normal login, so redirect there if no token
+  if (!token) return <Navigate to="/login" replace />
+  
+  // Check for 'ADMIN' role AND 'user' authType to separate them from Employee Admins
+  if (role !== 'ADMIN' || authType !== 'user') return <Navigate to="/login" replace />
+  
   return children
 }
 
@@ -95,11 +100,16 @@ function PublicOnly({ children }) {
   if (token) {
     if (authType === 'agent') {
       if (['SUPPORT_AGENT', 'SUPPORT_LEAD'].includes(role)) return <Navigate to="/agent/tickets" replace />
-      if (role === 'ADMIN_USERS') return <Navigate to="/users-admin/users" replace />
+      // Employee Admin check
       if (['ADMIN_EMPLOYEES', 'ADMIN'].includes(role)) return <Navigate to="/emp-admin/employees" replace />
     }
-    if (role === 'HOST') return <Navigate to="/host" replace />
-    return <Navigate to="/guest" replace />
+    
+    // ADD THIS BLOCK: Explicitly handle User Admins vs Hosts vs Guests
+    if (authType === 'user') {
+      if (role === 'ADMIN') return <Navigate to="/users-admin/listings" replace />
+      if (role === 'HOST') return <Navigate to="/host" replace />
+      return <Navigate to="/guest" replace />
+    }
   }
   return children
 }

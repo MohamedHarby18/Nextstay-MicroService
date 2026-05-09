@@ -14,9 +14,9 @@ const SIDEBARS = {
     links: [
       { label: 'Ticket Queue',    to: '/agent/tickets',         icon: '🎫' },
       { label: 'Action Needed',   to: '/agent/action-needed',   icon: '⚡' },
-      { label: 'Flagged Reviews', to: '/agent/flagged-reviews',  icon: '🚩' },
-      { label: 'Resolution Log',  to: '/agent/history',          icon: '✅' },
-      { label: 'My Performance',  to: '/agent/performance',      icon: '📊' },
+      { label: 'Flagged Reviews', to: '/agent/flagged-reviews', icon: '🚩' },
+      { label: 'Resolution Log',  to: '/agent/history',         icon: '✅' },
+      { label: 'My Performance',  to: '/agent/performance',     icon: '📊' },
     ],
   },
   SUPPORT_LEAD: {
@@ -26,9 +26,9 @@ const SIDEBARS = {
     links: [
       { label: 'Ticket Queue',    to: '/agent/tickets',         icon: '🎫' },
       { label: 'Action Needed',   to: '/agent/action-needed',   icon: '⚡' },
-      { label: 'Flagged Reviews', to: '/agent/flagged-reviews',  icon: '🚩' },
-      { label: 'Resolution Log',  to: '/agent/history',          icon: '✅' },
-      { label: 'My Performance',  to: '/agent/performance',      icon: '📊' },
+      { label: 'Flagged Reviews', to: '/agent/flagged-reviews', icon: '🚩' },
+      { label: 'Resolution Log',  to: '/agent/history',         icon: '✅' },
+      { label: 'My Performance',  to: '/agent/performance',     icon: '📊' },
     ],
   },
   ADMIN_USERS: {
@@ -36,9 +36,10 @@ const SIDEBARS = {
     bg:     'bg-usersAdmin-500',
     accent: '#E94560',
     links: [
-      { label: 'User Management',  to: '/users-admin/users',    icon: '👥' },
-      { label: 'Host Reviews',     to: '/users-admin/reviews',  icon: '⭐' },
-      { label: 'Refund Requests',  to: '/users-admin/refunds',  icon: '💳' },
+      { label: 'User Management',    to: '/users-admin/users',    icon: '👥' },
+      { label: 'Host Reviews',       to: '/users-admin/reviews',  icon: '⭐' },
+      { label: 'Refund Requests',    to: '/users-admin/refunds',  icon: '💳' },
+      { label: 'Property Approvals', to: '/users-admin/listings', icon: '🏠' },
     ],
   },
   ADMIN_EMPLOYEES: {
@@ -62,16 +63,23 @@ export default function EmployeeLayout({ children, sidebarRole }) {
 
   const config = SIDEBARS[sidebarRole] || SIDEBARS.SUPPORT_AGENT
 
-  const handleLogout = () => { logout(); navigate('/employee-login') }
+  const handleLogout = () => { 
+    logout(); 
+    if (sidebarRole === 'ADMIN_USERS') {
+      navigate('/login');
+    } else {
+      navigate('/employee-login');
+    }
+  }
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* ── Sidebar ── */}
-      <aside className={clsx(
-        'flex flex-col transition-all duration-300 shrink-0',
-        config.bg,
-        collapsed ? 'w-16' : 'w-64'
-      )}>
+            <aside className={clsx(
+              'flex flex-col transition-all duration-300 shrink-0 relative z-40', // <-- Added relative and z-40
+              config.bg,
+              collapsed ? 'w-16' : 'w-64'
+            )}>
         {/* Logo */}
         <div className="flex items-center justify-between px-4 py-5 shrink-0">
           {!collapsed && (
