@@ -18,8 +18,8 @@ import SubmitReview from './pages/guest/SubmitReview'
 import MyReviews from './pages/guest/MyReviews'
 import GuestTickets from './pages/guest/GuestTickets'
 import TicketConversation from './pages/guest/TicketConversation'
-import GuestProfile from './pages/guest/GuestProfile'
 
+import ProfilePage from './pages/shared/ProfilePage'
 // Host pages
 import HostDashboard from './pages/host/HostDashboard'
 import MyListings from './pages/host/MyListings'
@@ -135,7 +135,7 @@ export default function App() {
         <Route path="/guest/reviews" element={<RequireGuest><MyReviews /></RequireGuest>} />
         <Route path="/guest/tickets" element={<RequireAuth><GuestTickets /></RequireAuth>} />
         <Route path="/guest/tickets/:ticketId" element={<RequireAuth><TicketConversation /></RequireAuth>} />
-        <Route path="/guest/profile" element={<RequireAuth><GuestProfile /></RequireAuth>} />
+        <Route path="/guest/profile" element={<RequireGuest><ProfilePage /></RequireGuest>} />
 
         {/* ─── Host ─── */}
         <Route path="/host" element={<RequireHost><HostDashboard /></RequireHost>} />
@@ -146,7 +146,7 @@ export default function App() {
         <Route path="/host/earnings" element={<RequireHost><HostEarnings /></RequireHost>} />
         <Route path="/host/tickets" element={<RequireHost><GuestTickets /></RequireHost>} />
         <Route path="/host/tickets/:ticketId" element={<RequireHost><TicketConversation /></RequireHost>} />
-        <Route path="/host/profile" element={<RequireHost><GuestProfile /></RequireHost>} />
+        <Route path="/host/profile" element={<RequireHost><ProfilePage /></RequireHost>} />
 
         {/* ─── Support Agent ─── */}
         <Route path="/agent/tickets" element={<RequireAgent><AgentTicketQueue /></RequireAgent>} />
