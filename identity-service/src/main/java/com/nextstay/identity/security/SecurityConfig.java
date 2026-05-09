@@ -20,6 +20,13 @@ import java.util.Collections;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    // MOVED INSIDE THE CLASS
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -31,12 +38,16 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            
+            // ADDED THE FILTER HERE
+            .addFilterBefore(jwtAuthenticationFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
+            
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/agents/register", "/api/agents/login").permitAll()
                 
                 // This covers all Admin actions under the single "ADMIN" role
-                .requestMatchers("/api/admin/**", "/api/users/**").hasAuthority("ADMIN")
+                .requestMatchers("/api/admin/**", "/api/users/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN")
                 
                 .anyRequest().authenticated()
             );
