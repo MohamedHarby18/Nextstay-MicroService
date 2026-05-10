@@ -15,10 +15,18 @@ const STATUS_OPTIONS = ['open', 'in_progress', 'resolved', 'closed']
 export default function AgentTicketWorkspace() {
   const { ticketId } = useParams()
   const navigate = useNavigate()
-  const { userId, role } = useAuthStore()
+  const { userId, role, authType } = useAuthStore()
   const qc = useQueryClient()
   const [msg, setMsg] = useState('')
   const bottomRef = useRef()
+
+  // Determine sidebar role
+  let sidebarRole = 'SUPPORT_AGENT'
+  if (role === 'SUPPORT_LEAD') sidebarRole = 'SUPPORT_LEAD'
+  if (role === 'ADMIN_EMPLOYEES') sidebarRole = 'ADMIN_EMPLOYEES'
+  if (role === 'ADMIN') {
+    sidebarRole = authType === 'user' ? 'ADMIN_USERS' : 'ADMIN_EMPLOYEES'
+  }
 
   const { data: tickets = [] } = useQuery({ queryKey: ['tickets', 'dashboard', null], queryFn: () => ticketsApi.getDashboard(null) })
   const ticket = tickets.find(t => t.id === ticketId)
@@ -49,12 +57,12 @@ export default function AgentTicketWorkspace() {
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
   return (
-    <EmployeeLayout sidebarRole="SUPPORT_AGENT">
+    <EmployeeLayout sidebarRole={sidebarRole}>
       <div className="flex h-full gap-6">
         {/* Left — ticket info */}
         <div className="w-80 shrink-0 space-y-4 overflow-y-auto">
-          <button onClick={() => navigate('/agent/tickets')} className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary">
-            <ChevronLeft size={16} /> Back to queue
+          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary">
+            <ChevronLeft size={16} /> Back
           </button>
 
           {ticket && (
