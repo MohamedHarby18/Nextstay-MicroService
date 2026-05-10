@@ -9,13 +9,10 @@ import { SkeletonCard } from '../../components/ui/SkeletonLoader'
 import { formatCurrency, propertyImage } from '../../utils/formatters'
 import { useAuthStore } from '../../store/authStore'
 
-const CATEGORIES = ['All','Beachfront','Mountains','City','Countryside','Lakefront','Cabins','Unique']
-
 export default function GuestExplore() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
   const [search, setSearch] = useState({ location:'', checkIn:'', checkOut:'', guests:1 })
-  const [category, setCategory] = useState('All')
 
   const { data: listingsRes, isLoading } = useQuery({
     queryKey: ['listings', 'all'],
@@ -87,15 +84,7 @@ export default function GuestExplore() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        <div className="flex gap-3 overflow-x-auto pb-2 mb-8 scrollbar-hide">
-          {CATEGORIES.map(c => (
-            <button key={c} onClick={()=>setCategory(c)}
-              className={`shrink-0 px-5 py-2 rounded-full text-sm font-semibold border transition-all duration-200 ${category===c ? 'bg-brand-500 text-white border-brand-500' : 'bg-white text-text-secondary border-border hover:border-gray-400'}`}>
-              {c}
-            </button>
-          ))}
-        </div>
-
+        
         {recent.length > 0 && (
           <div className="mb-10">
             <div className="flex items-center justify-between mb-4">
