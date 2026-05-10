@@ -101,7 +101,9 @@ public class ReservationServiceImpl implements ReservationService {
         ApiResponse<ListingResponse> res = listingClient.getListingById(reservation.getListingId());
         ListingResponse listing = (res != null) ? res.getData() : null;
         
-        if (listing == null || !listing.getHostId().toString().equals(hostId.toString())) {
+        // FIXED: Added explicit null check for hostId to prevent 500 NPE
+        if (listing == null || listing.getHostId() == null || 
+            !listing.getHostId().toString().equals(hostId.toString())) {
             throw new ForbiddenException("Unauthorized: You do not own this listing");
         }
 
