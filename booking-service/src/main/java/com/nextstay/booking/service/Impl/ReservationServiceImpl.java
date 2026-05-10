@@ -2,6 +2,7 @@ package com.nextstay.booking.service.Impl;
 
 import com.nextstay.booking.client.ListingServiceClient;
 import com.nextstay.common.dto.ApiResponse;
+import com.nextstay.common.dto.ListingResponse;
 import com.nextstay.booking.dto.ReservationRequest;
 import com.nextstay.booking.dto.ReservationResponse;
 import com.nextstay.booking.entity.Reservation;
@@ -10,7 +11,6 @@ import com.nextstay.booking.exception.ForbiddenException;
 import com.nextstay.booking.exception.ResourceNotFoundException;
 import com.nextstay.booking.repository.ReservationRepository;
 import com.nextstay.booking.service.ReservationService;
-import com.nextstay.common.dto.ListingResponse;   // from nextstay-common (used by Feign)
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,25 +30,26 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     @Transactional
     public ReservationResponse createReservation(UUID guestId, ReservationRequest request) {
-        // Verify listing is ACTIVE via Listing Service
+        // 1. Verify listing is ACTIVE
         ApiResponse<ListingResponse> listingApiResponse = listingClient.getListingById(request.getListingId());
         ListingResponse listing = (listingApiResponse != null) ? listingApiResponse.getData() : null;
         if (listing == null || !"ACTIVE".equals(listing.getStatus())) {
-            throw new IllegalStateException("Listing is not available");
+            throw new IllegalStateException("Listing is not available for booking");
         }
 
-        // Double-booking prevention #FR-10
+        // 2. Double-booking prevention
         boolean conflict = !reservationRepo.findOverlapping(
                 request.getListingId(),
                 List.of(ReservationStatus.PENDING, ReservationStatus.CONFIRMED, ReservationStatus.COMPLETED),
                 request.getCheckOutDate(),
                 request.getCheckInDate()
         ).isEmpty();
+        
         if (conflict) {
-            throw new IllegalStateException("Selected dates are not available (double-booking prevented)");
+            throw new IllegalStateException("Selected dates are no longer available");
         }
 
-        // OCL constraint: check-out > check-in
+        // 3. Date logic check
         if (!request.getCheckOutDate().isAfter(request.getCheckInDate())) {
             throw new IllegalArgumentException("Check-out date must be after check-in date");
         }
@@ -61,8 +62,8 @@ public class ReservationServiceImpl implements ReservationService {
                 .numGuests(request.getNumGuests())
                 .status(ReservationStatus.PENDING)
                 .build();
-        reservation = reservationRepo.save(reservation);
-        return toResponse(reservation);
+
+        return toResponse(reservationRepo.save(reservation));
     }
 
     @Override
@@ -75,16 +76,16 @@ public class ReservationServiceImpl implements ReservationService {
             throw new IllegalStateException("Only pending reservations can be approved");
         }
 
-        // Verify that the caller is the host of the listing
-        ApiResponse<ListingResponse> approveApiResponse = listingClient.getListingById(reservation.getListingId());
-        ListingResponse listing = (approveApiResponse != null) ? approveApiResponse.getData() : null;
-        if (listing == null || !listing.getHostId().equals(hostId)) {
-            throw new ForbiddenException("Only the listing owner can approve this reservation");
+        ApiResponse<ListingResponse> res = listingClient.getListingById(reservation.getListingId());
+        ListingResponse listing = (res != null) ? res.getData() : null;
+        
+        // Ownership check using String comparison to avoid type mismatches
+        if (listing == null || !listing.getHostId().toString().equals(hostId.toString())) {
+            throw new ForbiddenException("Unauthorized: You do not own this listing");
         }
 
         reservation.setStatus(ReservationStatus.CONFIRMED);
-        reservationRepo.save(reservation);
-        return toResponse(reservation);
+        return toResponse(reservationRepo.save(reservation));
     }
 
     @Override
@@ -97,15 +98,43 @@ public class ReservationServiceImpl implements ReservationService {
             throw new IllegalStateException("Only pending reservations can be declined");
         }
 
-        ApiResponse<ListingResponse> declineApiResponse = listingClient.getListingById(reservation.getListingId());
-        ListingResponse listing = (declineApiResponse != null) ? declineApiResponse.getData() : null;
-        if (listing == null || !listing.getHostId().equals(hostId)) {
-            throw new ForbiddenException("Only the listing owner can decline this reservation");
+        ApiResponse<ListingResponse> res = listingClient.getListingById(reservation.getListingId());
+        ListingResponse listing = (res != null) ? res.getData() : null;
+        
+        if (listing == null || !listing.getHostId().toString().equals(hostId.toString())) {
+            throw new ForbiddenException("Unauthorized: You do not own this listing");
         }
 
         reservation.setStatus(ReservationStatus.REJECTED);
-        reservationRepo.save(reservation);
-        return toResponse(reservation);
+        return toResponse(reservationRepo.save(reservation));
+    }
+
+    @Override
+    public List<ReservationResponse> getReservationsByUser(UUID userId, String role) {
+        if ("GUEST".equalsIgnoreCase(role)) {
+            return reservationRepo.findByGuestId(userId).stream()
+                    .map(this::toResponse).collect(Collectors.toList());
+        }
+
+        if ("HOST".equalsIgnoreCase(role)) {
+            ApiResponse<List<ListingResponse>> hostListingsRes = listingClient.getListingsByHost(userId);
+            List<ListingResponse> listings = (hostListingsRes != null) ? hostListingsRes.getData() : List.of();
+            
+            List<UUID> listingIds = listings.stream().map(ListingResponse::getId).collect(Collectors.toList());
+            if (listingIds.isEmpty()) return List.of();
+
+            return reservationRepo.findByListingIdIn(listingIds).stream()
+                    .map(this::toResponse).collect(Collectors.toList());
+        }
+        return List.of();
+    }
+
+    private ReservationResponse toResponse(Reservation r) {
+        return ReservationResponse.builder()
+                .id(r.getId()).guestId(r.getGuestId()).listingId(r.getListingId())
+                .checkInDate(r.getCheckInDate()).checkOutDate(r.getCheckOutDate())
+                .numGuests(r.getNumGuests()) // FIXED: Correct getter name
+                .status(r.getStatus().name()).createdAt(r.getCreatedAt()).build();
     }
 
     @Override
@@ -114,7 +143,6 @@ public class ReservationServiceImpl implements ReservationService {
         Reservation reservation = reservationRepo.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found"));
 
-        // Only the guest who owns the reservation can cancel, and only when it's CONFIRMED
         if (!reservation.getGuestId().equals(guestId)) {
             throw new ForbiddenException("You can only cancel your own reservations");
         }
@@ -123,46 +151,25 @@ public class ReservationServiceImpl implements ReservationService {
         }
 
         reservation.setStatus(ReservationStatus.CANCELLED);
-        reservationRepo.save(reservation);
-        return toResponse(reservation);
+        return toResponse(reservationRepo.save(reservation));
     }
 
     @Override
     public ReservationResponse getReservation(UUID reservationId) {
-        Reservation reservation = reservationRepo.findById(reservationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found"));
-        return toResponse(reservation);
-    }
-
-    @Override
-    public List<ReservationResponse> getReservationsByUser(UUID userId) {
-        return reservationRepo.findByGuestId(userId).stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        return toResponse(reservationRepo.findById(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found")));
     }
 
     @Override
     @Transactional
     public void completePastStays() {
         LocalDate today = LocalDate.now();
-        List<Reservation> confirmed = reservationRepo.findAll().stream()
+        List<Reservation> pastStays = reservationRepo.findAll().stream()
                 .filter(r -> r.getStatus() == ReservationStatus.CONFIRMED)
                 .filter(r -> r.getCheckOutDate().isBefore(today))
-                .collect(Collectors.toList());
-        confirmed.forEach(r -> r.setStatus(ReservationStatus.COMPLETED));
-        reservationRepo.saveAll(confirmed);
-    }
-
-    private ReservationResponse toResponse(Reservation r) {
-        return ReservationResponse.builder()
-                .id(r.getId())
-                .guestId(r.getGuestId())
-                .listingId(r.getListingId())
-                .checkInDate(r.getCheckInDate())
-                .checkOutDate(r.getCheckOutDate())
-                .numGuests(r.getNumGuests())
-                .status(r.getStatus().name())
-                .createdAt(r.getCreatedAt())
-                .build();
+                .toList();
+        
+        pastStays.forEach(r -> r.setStatus(ReservationStatus.COMPLETED));
+        reservationRepo.saveAll(pastStays);
     }
 }

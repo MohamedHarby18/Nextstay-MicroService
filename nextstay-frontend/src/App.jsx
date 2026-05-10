@@ -29,6 +29,7 @@ import CreateListing from './pages/host/CreateListing'
 import HostBookings from './pages/host/HostBookings'
 import HostReviews from './pages/host/HostReviews'
 import HostEarnings from './pages/host/HostEarnings'
+import EditListing from './pages/host/EditListing'
 
 // Agent pages
 import AgentTicketQueue from './pages/agent/AgentTicketQueue'
@@ -143,6 +144,8 @@ export default function App() {
         <Route path="/host/tickets/:ticketId" element={<RequireHost><TicketConversation /></RequireHost>} />
         {/* UPDATED: Unified Profile Route */}
         <Route path="/host/profile" element={<RequireHost><ProfilePage /></RequireHost>} />
+        {/* ADDED: Missing route for editing listings to satisfy URS-17 */}
+        <Route path="/host/listings/:id/edit" element={<RequireHost><EditListing /></RequireHost>} />
 
         {/* ─── Support Agent ─── */}
         <Route path="/agent/tickets" element={<RequireAgent><AgentTicketQueue /></RequireAgent>} />

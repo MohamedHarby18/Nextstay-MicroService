@@ -12,6 +12,6 @@ public interface ReservationService {
     ReservationResponse declineReservation(UUID reservationId, UUID hostId);
     ReservationResponse cancelReservation(UUID reservationId, UUID guestId);
     ReservationResponse getReservation(UUID reservationId);
-    List<ReservationResponse> getReservationsByUser(UUID userId);
+    List<ReservationResponse> getReservationsByUser(UUID userId, String role);    
     void completePastStays();   // called by scheduler
 }

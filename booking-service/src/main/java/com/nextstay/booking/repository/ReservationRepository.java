@@ -11,11 +11,11 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ReservationRepository extends JpaRepository<Reservation, UUID> {
-    List<Reservation> findByGuestId(UUID guestId);
-    List<Reservation> findByListingId(UUID listingId);
-    List<Reservation> findByGuestIdAndStatus(UUID guestId, ReservationStatus status);
-    List<Reservation> findByListingIdAndStatus(UUID listingId, ReservationStatus status);
-
+       List<Reservation> findByGuestId(UUID guestId);
+       List<Reservation> findByListingId(UUID listingId);
+       List<Reservation> findByGuestIdAndStatus(UUID guestId, ReservationStatus status);
+       List<Reservation> findByListingIdAndStatus(UUID listingId, ReservationStatus status);
+       List<Reservation> findByListingIdIn(List<UUID> listingIds);
     @Query("SELECT r FROM Reservation r WHERE r.listingId = :listingId AND r.status IN :statuses " +
            "AND r.checkInDate < :checkOut AND r.checkOutDate > :checkIn")
     List<Reservation> findOverlapping(
